@@ -1,0 +1,23 @@
+# before vcpkg build, cmake source build may be needed. (default 3.13.x)
+
+# vcpkg build
+cd /workspace/vcpkg
+mkdir build
+cd build
+cmake -S ../toolsrc/ . -DVCPKG_DEVELOPMENT_WARNINGS=OFF -DBUILD_TESTING=OFF
+sudo apt install ninja-build
+cp ./vcpkg  ..
+cd ..
+
+# install libxxf86vm-dev for libwebp (dependent package for opencv4)
+sudo apt-get install libxxf86vm-dev
+
+# opencv4
+./vcpkg install opencv4[world,contrib] --triplet arm-linux --overlay-ports=./ports-custom
+
+# boost
+./vcpkg install boost --triplet arm-linux --overlay-ports=./ports-custom
+
+# export
+# NOTE : protobuf, libjpeg-turbo zlib installed as depedent package of opencv4 and boost
+./vcpkg export opencv4[world,contrib] boost protobuf libjpeg-turbo zlib --zip --triplet arm-linux
