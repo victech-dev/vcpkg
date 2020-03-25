@@ -1,3 +1,4 @@
+# mainly referenced by https://github.com/microsoft/vcpkg/issues/9570
 # before vcpkg build, cmake source build may be needed. (default 3.13.x)
 
 # vcpkg build
