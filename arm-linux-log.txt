@@ -19,6 +19,13 @@ sudo apt-get install libxxf86vm-dev
 # boost
 ./vcpkg install boost --triplet arm-linux --overlay-ports=./ports-custom
 
+# glfw3 (for realsense2[tools])
+sudo apt install libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev
+
+# realsense2
+# sudo apt-get install libusb-1.0-0-dev
+./vcpkg install realsense2 --triplet arm-linux --overlay-ports=./ports-custom
+
 # export
 # NOTE : protobuf, libjpeg-turbo zlib installed as depedent package of opencv4 and boost
 ./vcpkg export opencv4[world,contrib] boost protobuf libjpeg-turbo zlib --zip --triplet arm-linux
