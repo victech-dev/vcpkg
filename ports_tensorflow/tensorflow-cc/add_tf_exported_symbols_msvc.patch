@@ -1,0 +1,32 @@
+diff --git a/tensorflow/BUILD b/tensorflow/BUILD
+index 6b86445f..4fd60d99 100644
+--- a/tensorflow/BUILD
++++ b/tensorflow/BUILD
+@@ -643,7 +643,10 @@ tf_cc_shared_object(
+         "//tensorflow:macos": [
+             "-Wl,-exported_symbols_list,$(location //tensorflow:tf_exported_symbols.lds)",
+         ],
+-        "//tensorflow:windows": [],
++        "//tensorflow:windows": [
++          "-def:" +  # This line must be directly followed by the exported_symbols_msvc.lds file
++           "$(location //tensorflow:tf_exported_symbols_msvc.lds)",
++        ],
+         "//conditions:default": [
+             "-z defs",
+             "-Wl,--version-script,$(location //tensorflow:tf_version_script.lds)",
+@@ -660,6 +663,7 @@ tf_cc_shared_object(
+     }),
+     deps = [
+         "//tensorflow:tf_exported_symbols.lds",
++        "//tensorflow:tf_exported_symbols_msvc.lds",
+         "//tensorflow:tf_version_script.lds",
+         "//tensorflow/c:c_api",
+         "//tensorflow/c/eager:c_api",
+@@ -761,6 +765,7 @@ exports_files(
+     [
+         "tf_version_script.lds",
+         "tf_exported_symbols.lds",
++        "tf_exported_symbols_msvc.lds",
+     ],
+ )
+ 
