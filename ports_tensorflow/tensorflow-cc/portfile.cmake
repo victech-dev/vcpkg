@@ -16,11 +16,8 @@ vcpkg_from_github(
         file-exists.patch # required or otherwise it cant find python lib path on windows
         fix-build-error.patch # Fix namespace error
         add_io_bazel_rules_docker.patch
-        add_tf_exported_symbols_msvc.patch
+        add_custom_export_symbols.patch
 )
-
-# copy custom lds file for msvc
-file(COPY ${CMAKE_CURRENT_LIST_DIR}/tf_exported_symbols_msvc.lds DESTINATION ${SOURCE_PATH}/tensorflow/)
 
 # due to https://github.com/bazelbuild/bazel/issues/8028, bazel must be version 25.0 or higher
 vcpkg_find_acquire_program(BAZEL)

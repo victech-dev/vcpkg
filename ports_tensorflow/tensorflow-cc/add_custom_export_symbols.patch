@@ -1,0 +1,54 @@
+diff --git a/tensorflow/tools/def_file_filter/def_file_filter.py.tpl b/tensorflow/tools/def_file_filter/def_file_filter.py.tpl
+index 883a4fa2..e3bc5a8c 100644
+--- a/tensorflow/tools/def_file_filter/def_file_filter.py.tpl
++++ b/tensorflow/tools/def_file_filter/def_file_filter.py.tpl
+@@ -207,6 +207,49 @@ def main():
+     def_fp.write("EXPORTS\n")
+     def_fp.write("\t ??1OpDef@tensorflow@@UEAA@XZ\n")
+ 
++    # Custom sympol for VIC
++    def_fp.write("\t ??0MetaGraphDef@tensorflow@@QEAA@XZ\n")
++    def_fp.write("\t ??1MetaGraphDef@tensorflow@@UEAA@XZ\n")
++    def_fp.write("\t ??0LogMessageFatal@internal@tensorflow@@QEAA@PEBDH@Z\n")
++    def_fp.write("\t ??1LogMessageFatal@internal@tensorflow@@UEAA@XZ\n")
++    def_fp.write("\t ??0CheckOpMessageBuilder@internal@tensorflow@@QEAA@PEBD@Z\n")
++    def_fp.write("\t ??1CheckOpMessageBuilder@internal@tensorflow@@QEAA@XZ\n")
++    def_fp.write("\t ?ForVar2@CheckOpMessageBuilder@internal@tensorflow@@QEAAPEAV?$basic_ostream@DU?$char_traits@D@std@@@std@@XZ\n")
++    def_fp.write("\t ?NewString@CheckOpMessageBuilder@internal@tensorflow@@QEAAPEAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ\n")
++    def_fp.write("\t ?GetVarint32PtrFallback@core@tensorflow@@YAPEBDPEBD0PEAI@Z\n")
++    def_fp.write("\t ?ToString@Status@tensorflow@@QEBA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ\n")
++    def_fp.write("\t ?SlowCopyFrom@Status@tensorflow@@AEAAXPEBUState@12@@Z\n")
++    def_fp.write("\t ?_GraphDef_default_instance_@tensorflow@@3VGraphDefDefaultTypeInternal@1@A\n")
++    def_fp.write("\t ?NewSession@tensorflow@@YA?AVStatus@1@AEBUSessionOptions@1@PEAPEAVSession@1@@Z\n")
++    def_fp.write("\t ??0SessionOptions@tensorflow@@QEAA@XZ\n")
++    def_fp.write("\t ??1ConfigProto@tensorflow@@UEAA@XZ\n")
++    def_fp.write("\t ?ReadBinaryProto@tensorflow@@YA?AVStatus@1@PEAVEnv@1@AEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PEAVMessageLite@protobuf@google@@@Z\n")
++    def_fp.write("\t ?Default@Env@tensorflow@@SAPEAV12@XZ\n")
++    def_fp.write("\t ?CheckIsAlignedAndSingleElement@Tensor@tensorflow@@AEBAXXZ\n")
++    def_fp.write("\t ?_SaverDef_default_instance_@tensorflow@@3VSaverDefDefaultTypeInternal@1@A\n")
++    def_fp.write("\t ?CheckTypeAndIsAligned@Tensor@tensorflow@@AEBAXW4DataType@2@@Z\n")
++    def_fp.write("\t ??1Tensor@tensorflow@@QEAA@XZ\n")
++    def_fp.write("\t ??0Tensor@tensorflow@@QEAA@W4DataType@1@AEBVTensorShape@1@@Z\n")
++    def_fp.write("\t ??0?$TensorShapeBase@VTensorShape@tensorflow@@@tensorflow@@QEAA@XZ\n")
++    def_fp.write("\t ??0?$TensorShapeBase@VTensorShape@tensorflow@@@tensorflow@@QEAA@V?$Span@$$CB_J@absl@@@Z\n")
++    def_fp.write("\t ?DestructorOutOfLine@TensorShapeRep@tensorflow@@AEAAXXZ\n")
++    def_fp.write("\t ?TfCheckOpHelperOutOfLine@tensorflow@@YAPEAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AEBVStatus@1@PEBD@Z\n")
++    def_fp.write("\t ?DebugString@Tensor@tensorflow@@QEBA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ\n")
++    def_fp.write("\t ?SlowCopyFrom@TensorShapeRep@tensorflow@@AEAAXAEBV12@@Z\n")
++    def_fp.write("\t ?dim_size@?$TensorShapeBase@VTensorShape@tensorflow@@@tensorflow@@QEBA_JH@Z\n")
++    def_fp.write("\t ?CheckDimsEqual@TensorShape@tensorflow@@AEBAXH@Z\n")
++    def_fp.write("\t ?CheckDimsAtLeast@TensorShape@tensorflow@@AEBAXH@Z\n")
++
++    def_fp.write("\t ??0Tensor@tensorflow@@QEAA@XZ\n")
++    def_fp.write("\t ??0GraphDef@tensorflow@@QEAA@XZ\n")
++    def_fp.write("\t ??1GraphDef@tensorflow@@UEAA@XZ\n")
++    
++    def_fp.write("\t ?CheckType@Tensor@tensorflow@@AEBAXW4DataType@2@@Z\n")
++    def_fp.write("\t ?CopyFromInternal@Tensor@tensorflow@@AEAAXAEBV12@AEBVTensorShape@2@@Z\n")
++    def_fp.write("\t ??1NodeDef@tensorflow@@UEAA@XZ\n")
++    def_fp.write("\t ??0NodeDef@tensorflow@@QEAA@AEBV01@@Z\n")
++    # Custom sympol for VIC
++
+     # Each symbols returned by undname matches the same position in candidates.
+     # We compare on undname but use the decorated name from candidates.
+     dupes = 0
