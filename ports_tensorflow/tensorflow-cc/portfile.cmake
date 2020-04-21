@@ -110,9 +110,9 @@ file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-genfiles/tensorf
 
 if(CMAKE_HOST_WIN32)
     file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_cc.so.1.15.0 DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
-    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_cc.so.1.15.0.ifso DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
+    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/liblibtensorflow_cc.so.1.15.0.ifso DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
     file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_cc.so.1.15.0 DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
-    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_cc.so.1.15.0.ifso DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
+    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/liblibtensorflow_cc.so.1.15.0.ifso DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
 else()
     file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_cc.so.1.15.0 DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
     file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_framework.so.1.15.0 DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
