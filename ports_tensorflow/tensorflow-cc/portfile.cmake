@@ -17,6 +17,7 @@ vcpkg_from_github(
         fix-build-error.patch # Fix namespace error
         add_io_bazel_rules_docker.patch
         add_custom_export_symbols.patch
+	use_patch_utility.patch
 )
 
 # due to https://github.com/bazelbuild/bazel/issues/8028, bazel must be version 25.0 or higher
@@ -82,6 +83,9 @@ set(ENV{TF_NCCL_VERSION} 2.3)
 set(ENV{NCCL_INSTALL_PATH} "")
 set(ENV{CC_OPT_FLAGS} "/arch:AVX")
 set(ENV{TF_NEED_CUDA} 1)
+set(ENV{TF_CUDA_CLANG} 0)
+set(ENV{GCC_HOST_COMPILER_PATH} "")
+set(ENV{TF_CUDA_COMPUTE_CAPABILITIES} "3.5,7.0")
 
 message(STATUS "Configuring TensorFlow")
 
@@ -100,7 +104,7 @@ if(CMAKE_HOST_WIN32)
     )
 else()
     vcpkg_execute_build_process(
-        COMMAND ${BAZEL} build --config=cuda --verbose_failures -c opt --copt=-nvcc_options=disable-warnings --python_path=${PYTHON3} --incompatible_disable_deprecated_attr_params=false --define=no_tensorflow_py_deps=true //tensorflow:libtensorflow_cc.so //tensorflow:install_headers
+        COMMAND ${BAZEL} build --config=cuda --verbose_failures -c opt --python_path=${PYTHON3} --incompatible_disable_deprecated_attr_params=false --define=no_tensorflow_py_deps=true //tensorflow:libtensorflow_cc.so //tensorflow:install_headers
         WORKING_DIRECTORY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel
         LOGNAME build-${TARGET_TRIPLET}-rel
     )
