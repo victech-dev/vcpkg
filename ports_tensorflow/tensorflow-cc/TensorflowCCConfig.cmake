@@ -7,29 +7,33 @@ set(tensorflow_cc_INCLUDE_DIRS
 	${tensorflow_cc_INCLUDE_DIR}/tensorflow-external/tensorflow/
 )
 
-add_library(tensorflow_cc::tensorflow_cc SHARED IMPORTED)
-set_target_properties(tensorflow_cc::tensorflow_cc
-	PROPERTIES 
-	IMPORTED_IMPLIB_RELEASE ${CMAKE_CURRENT_LIST_DIR}/../../lib/liblibtensorflow_cc.so.1.15.0.ifso
-	IMPORTED_LOCATION_RELEASE ${CMAKE_CURRENT_LIST_DIR}/../../lib/libtensorflow_cc.so.1.15.0
-	INTERFACE_INCLUDE_DIRECTORIES "${tensorflow_cc_INCLUDE_DIRS}"
-)
+if(CMAKE_HOST_WIN32)
+	add_library(tensorflow_cc::tensorflow_cc SHARED IMPORTED)
+	set_target_properties(tensorflow_cc::tensorflow_cc
+		PROPERTIES 
+		IMPORTED_IMPLIB_RELEASE ${CMAKE_CURRENT_LIST_DIR}/../../lib/liblibtensorflow_cc.so.1.15.0.ifso
+		IMPORTED_LOCATION_RELEASE ${CMAKE_CURRENT_LIST_DIR}/../../lib/libtensorflow_cc.so.1.15.0
+		INTERFACE_INCLUDE_DIRECTORIES "${tensorflow_cc_INCLUDE_DIRS}"
+	)
 
-set(tensorflow_cc_FOUND TRUE)
+	set(tensorflow_cc_FOUND TRUE)
+else()
+	add_library(tensorflow_cc::tensorflow_framework SHARED IMPORTED)
+	set_target_properties(tensorflow_cc::tensorflow_framework 
+		PROPERTIES
+		IMPORTED_LOCATION ${CMAKE_CURRENT_LIST_DIR}/../../lib/libtensorflow_framework.so.1.15.0
+		INTERFACE_INCLUDE_DIRECTORIES "${tensorflow_cc_INCLUDE_DIRS}"
+	)
+	
+	add_library(tensorflow_cc::tensorflow_cc SHARED IMPORTED)
+	set_target_properties(tensorflow_cc::tensorflow_cc
+		PROPERTIES 
+		IMPORTED_LOCATION ${CMAKE_CURRENT_LIST_DIR}/../../lib/libtensorflow_cc.so.1.15.0
+		INTERFACE_INCLUDE_DIRECTORIES "${tensorflow_cc_INCLUDE_DIRS}"
+	)
 
-# add_library(tensorflow_cc::tensorflow_framework SHARED IMPORTED)
-# set_target_properties(tensorflow_cc::tensorflow_framework 
-# 	PROPERTIES
-# 	IMPORTED_LOCATION ${CMAKE_CURRENT_LIST_DIR}/../../lib/libtensorflow_framework.so.1.14.0
-# 	INTERFACE_INCLUDE_DIRECTORIES "${tensorflow_cc_INCLUDE_DIRS}"
-# )
+	set(tensorflow_cc_FOUND TRUE)
+	set(tensorflow_framework_FOUND TRUE)
+endif()
 
-# add_library(tensorflow_cc::tensorflow_cc SHARED IMPORTED)
-# set_target_properties(tensorflow_cc::tensorflow_cc
-# 	PROPERTIES 
-# 	IMPORTED_LOCATION ${CMAKE_CURRENT_LIST_DIR}/../../lib/libtensorflow_cc.so.1.14.0
-# 	INTERFACE_INCLUDE_DIRECTORIES "${tensorflow_cc_INCLUDE_DIRS}"
-# )
-
-# set(tensorflow_cc_FOUND TRUE)
-# set(tensorflow_framework_FOUND TRUE)
+get_filename_component( TENSORFLOW_CC_LIBRARIES ${CMAKE_CURRENT_LIST_DIR}/../../lib/libtensorflow_cc.so.1.15.0 ABSOLUTE )
