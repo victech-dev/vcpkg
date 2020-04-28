@@ -85,7 +85,7 @@ set(ENV{CC_OPT_FLAGS} "/arch:AVX")
 set(ENV{TF_NEED_CUDA} 1)
 set(ENV{TF_CUDA_CLANG} 0)
 set(ENV{GCC_HOST_COMPILER_PATH} "/usr/bin/gcc")
-set(ENV{TF_CUDA_COMPUTE_CAPABILITIES} "3.5,7.0")
+set(ENV{TF_CUDA_COMPUTE_CAPABILITIES} "7.2,7.5") # Jetson Xavier:7.2, RTX 2080 Ti:7.5, GTX 1650:7.5
 
 message(STATUS "Configuring TensorFlow")
 
