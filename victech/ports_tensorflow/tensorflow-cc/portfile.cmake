@@ -20,14 +20,18 @@ vcpkg_from_github(
 	    #use_patch_utility.patch
 )
 
-# due to https://github.com/bazelbuild/bazel/issues/8028, bazel must be version 25.0 or higher
 vcpkg_find_acquire_program(BAZEL2.0.0)
 get_filename_component(BAZEL_DIR "${BAZEL}" DIRECTORY)
 vcpkg_add_to_path(PREPEND ${BAZEL_DIR})
 set(ENV{BAZEL_BIN_PATH} "${BAZEL}")
 
+# TODO Tensorflow2.0 cannot built with python-embed 
 #vcpkg_find_acquire_program(PYTHON3)
-set(PYTHON3 "C:/Users/dev/AppData/Local/Programs/Python/Python37/python.exe")
+if(CMAKE_HOST_WIN32)
+    set(PYTHON3 "C:/Users/dev/AppData/Local/Programs/Python/Python37/python.exe")
+else()
+    set(PYTHON3 "/usr/bin/python3")
+endif()
 get_filename_component(PYTHON3_DIR "${PYTHON3}" DIRECTORY)
 vcpkg_add_to_path(PREPEND ${PYTHON3_DIR})
 set(ENV{PYTHON_BIN_PATH} "${PYTHON3}")
