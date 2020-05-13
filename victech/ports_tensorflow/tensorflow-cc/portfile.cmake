@@ -9,24 +9,25 @@ endif()
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO tensorflow/tensorflow
-    REF v1.15.0
-    SHA512 f8683a950be6a3fa234d42e0f46bd9e049280e0c1d203c5c00ad44cf4728d894f2c301939d6d71203f815130a1ead53127adcc7565009589ff5aafc878b4dba7
+    REF v2.2.0
+    SHA512 94a2663497d333d543f363e9fea94fbcfdcdbbc0dfbaf009ba9181a808713aeb78f9b8805f56bea5fd3925a36f105427b3996795750589f378d8afbdadc2b86d
     HEAD_REF master
     PATCHES
         file-exists.patch # required or otherwise it cant find python lib path on windows
         fix-build-error.patch # Fix namespace error
         add_io_bazel_rules_docker.patch
         add_custom_export_symbols.patch
-	use_patch_utility.patch
+	    #use_patch_utility.patch
 )
 
 # due to https://github.com/bazelbuild/bazel/issues/8028, bazel must be version 25.0 or higher
-vcpkg_find_acquire_program(BAZEL)
+vcpkg_find_acquire_program(BAZEL2.0.0)
 get_filename_component(BAZEL_DIR "${BAZEL}" DIRECTORY)
 vcpkg_add_to_path(PREPEND ${BAZEL_DIR})
 set(ENV{BAZEL_BIN_PATH} "${BAZEL}")
 
-vcpkg_find_acquire_program(PYTHON3)
+#vcpkg_find_acquire_program(PYTHON3)
+set(PYTHON3 "C:/Users/dev/AppData/Local/Programs/Python/Python37/python.exe")
 get_filename_component(PYTHON3_DIR "${PYTHON3}" DIRECTORY)
 vcpkg_add_to_path(PREPEND ${PYTHON3_DIR})
 set(ENV{PYTHON_BIN_PATH} "${PYTHON3}")
@@ -110,24 +111,24 @@ else()
     )
 endif()
 
-file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-genfiles/tensorflow/include/ DESTINATION ${CURRENT_PACKAGES_DIR}/include/tensorflow-external)
+file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/include/ DESTINATION ${CURRENT_PACKAGES_DIR}/include/tensorflow-external)
 
 if(CMAKE_HOST_WIN32)
-    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_cc.so.1.15.0 DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
-    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_cc.so.1 DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
-    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/liblibtensorflow_cc.so.1.15.0.ifso DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
-    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_cc.so.1.15.0 DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
-    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_cc.so.1 DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
-    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/liblibtensorflow_cc.so.1.15.0.ifso DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
+    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_cc.so.2.2.0 DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
+    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_cc.so.2 DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
+    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/liblibtensorflow_cc.so.2.2.0.ifso DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
+    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_cc.so.2.2.0 DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
+    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_cc.so.2 DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
+    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/liblibtensorflow_cc.so.2.2.0.ifso DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
 else()
-    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_cc.so.1.15.0 DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
-    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_framework.so.1.15.0 DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
-    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_cc.so.1 DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
-    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_framework.so.1 DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
-    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_cc.so.1.15.0 DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
-    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_framework.so.1.15.0 DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
-    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_cc.so.1 DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
-    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_framework.so.1 DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
+    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_cc.so.2.2.0 DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
+    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_framework.so.2.2.0 DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
+    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_cc.so.2 DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
+    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_framework.so.2 DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
+    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_cc.so.2.2.0 DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
+    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_framework.so.2.2.0 DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
+    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_cc.so.2 DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
+    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_framework.so.2 DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
 endif()
 
 file(COPY ${SOURCE_PATH}/LICENSE DESTINATION ${CURRENT_PACKAGES_DIR}/share/tensorflow-cc)

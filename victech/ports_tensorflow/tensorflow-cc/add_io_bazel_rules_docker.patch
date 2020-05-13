@@ -1,10 +1,10 @@
 diff --git a/WORKSPACE b/WORKSPACE
-index 74ea14d0..7c6ec9d9 100644
+index ad645add..ed7f228c 100644
 --- a/WORKSPACE
 +++ b/WORKSPACE
 @@ -2,6 +2,14 @@ workspace(name = "org_tensorflow")
  
- load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file")
+ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
  
 +# Download the rules_docker repository at release v0.14.1
 +http_archive(
