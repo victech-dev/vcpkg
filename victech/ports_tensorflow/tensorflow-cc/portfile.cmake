@@ -20,7 +20,8 @@ vcpkg_from_github(
 	    #use_patch_utility.patch
 )
 
-vcpkg_find_acquire_program(BAZEL2.0.0)
+vcpkg_find_acquire_program(BAZEL2_0_0)
+set(BAZEL ${BAZEL2_0_0})
 get_filename_component(BAZEL_DIR "${BAZEL}" DIRECTORY)
 vcpkg_add_to_path(PREPEND ${BAZEL_DIR})
 set(ENV{BAZEL_BIN_PATH} "${BAZEL}")
