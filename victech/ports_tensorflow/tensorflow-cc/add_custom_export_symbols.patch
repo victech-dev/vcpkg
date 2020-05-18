@@ -2,7 +2,7 @@ diff --git a/tensorflow/tools/def_file_filter/def_file_filter.py.tpl b/tensorflo
 index 883a4fa2..e3bc5a8c 100644
 --- a/tensorflow/tools/def_file_filter/def_file_filter.py.tpl
 +++ b/tensorflow/tools/def_file_filter/def_file_filter.py.tpl
-@@ -207,6 +207,49 @@ def main():
+@@ -207,6 +207,53 @@ def main():
      def_fp.write("EXPORTS\n")
      def_fp.write("\t ??1OpDef@tensorflow@@UEAA@XZ\n")
  
@@ -47,11 +47,10 @@ index 883a4fa2..e3bc5a8c 100644
 +    def_fp.write("\t ?CopyFromInternal@Tensor@tensorflow@@AEAAXAEBV12@AEBVTensorShape@2@@Z\n")
 +    def_fp.write("\t ??1NodeDef@tensorflow@@UEAA@XZ\n")
 +    def_fp.write("\t ??0NodeDef@tensorflow@@QEAA@AEBV01@@Z\n")
-
++
 +    def_fp.write("\t ??1SavedModelBundleInterface@tensorflow@@UEAA@XZ\n")
 +    def_fp.write("\t ?LoadSavedModel@tensorflow@@YA?AVStatus@1@AEBUSessionOptions@1@AEBVRunOptions@1@AEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AEBV?$unordered_set@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$hash@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@U?$equal_to@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@6@QEAVSavedModelBundleLite@1@@Z\n")
 +    def_fp.write("\t ?LoadSavedModel@tensorflow@@YA?AVStatus@1@AEBUSessionOptions@1@AEBVRunOptions@1@AEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AEBV?$unordered_set@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$hash@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@U?$equal_to@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@6@QEAUSavedModelBundle@1@@Z\n")
-
 +    # Custom sympol for VIC
 +
      # Each symbols returned by undname matches the same position in candidates.
