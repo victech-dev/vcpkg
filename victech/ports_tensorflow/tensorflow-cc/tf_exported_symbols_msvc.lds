@@ -40,3 +40,7 @@ EXPORTS
     ?CopyFromInternal@Tensor@tensorflow@@AEAAXAEBV12@AEBVTensorShape@2@@Z
     ??1NodeDef@tensorflow@@UEAA@XZ
     ??0NodeDef@tensorflow@@QEAA@AEBV01@@Z
+
+    ??1SavedModelBundleInterface@tensorflow@@UEAA@XZ
+    ?LoadSavedModel@tensorflow@@YA?AVStatus@1@AEBUSessionOptions@1@AEBVRunOptions@1@AEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AEBV?$unordered_set@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$hash@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@U?$equal_to@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@6@QEAVSavedModelBundleLite@1@@Z
+    ?LoadSavedModel@tensorflow@@YA?AVStatus@1@AEBUSessionOptions@1@AEBVRunOptions@1@AEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AEBV?$unordered_set@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$hash@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@U?$equal_to@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@6@QEAUSavedModelBundle@1@@Z
