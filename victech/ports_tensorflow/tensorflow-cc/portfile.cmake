@@ -45,12 +45,6 @@ function(tensorflow_try_remove_recurse_wait PATH_TO_REMOVE)
     endif()
 endfunction()
 
-# we currently only support the release version
-tensorflow_try_remove_recurse_wait(${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel)
-file(MAKE_DIRECTORY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel)
-file(GLOB SOURCES ${SOURCE_PATH}/*)
-file(COPY ${SOURCES} DESTINATION ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel)
-
 if(CMAKE_HOST_WIN32)
     vcpkg_acquire_msys(MSYS_ROOT PACKAGES unzip patch diffutils git)
     set(BASH ${MSYS_ROOT}/usr/bin/bash.exe)
@@ -58,8 +52,6 @@ if(CMAKE_HOST_WIN32)
 
     set(ENV{BAZEL_VS} $ENV{VSInstallDir})
     set(ENV{BAZEL_VC} $ENV{VCInstallDir})
-    #set(ENV{BAZEL_VS} "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\")
-    #set(ENV{BAZEL_VC} "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC")
     message (BAZEL_VS=$ENV{BAZEL_VS})
     message (BAZEL_VC=$ENV{BAZEL_VC})
 endif()
@@ -93,18 +85,25 @@ set(ENV{TF_CUDA_CLANG} 0)
 set(ENV{GCC_HOST_COMPILER_PATH} "/usr/bin/gcc")
 set(ENV{TF_CUDA_COMPUTE_CAPABILITIES} "7.2,7.5") # Jetson Xavier:7.2, RTX 2080 Ti:7.5, GTX 1650:7.5
 
-message(STATUS "Configuring TensorFlow")
+#####################################################################
+# Try build release version
+tensorflow_try_remove_recurse_wait(${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel)
+file(MAKE_DIRECTORY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel)
+file(GLOB SOURCES ${SOURCE_PATH}/*)
+file(COPY ${SOURCES} DESTINATION ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel)
+
+message(STATUS "Configuring TensorFlow (Release)")
 
 vcpkg_execute_required_process(
     COMMAND ${PYTHON3} ${SOURCE_PATH}/configure.py
     WORKING_DIRECTORY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel
     LOGNAME config-${TARGET_TRIPLET}-rel
 )
-message(STATUS "Warning: Building TensorFlow can take an hour or more.")
+message(STATUS "Warning: Building TensorFlow (Release) can take an hour or more.")
 
 if(CMAKE_HOST_WIN32)
     vcpkg_execute_build_process(
-        COMMAND ${BASH} --noprofile --norc -c "${BAZEL} build --config=cuda --verbose_failures -c opt --copt=-nvcc_options=disable-warnings --python_path=${PYTHON3} --incompatible_disable_deprecated_attr_params=false --define=no_tensorflow_py_deps=true ///tensorflow:libtensorflow_cc.so ///tensorflow:install_headers"
+        COMMAND ${BASH} --noprofile --norc -c "${BAZEL} build --config=cuda --config=nonccl --verbose_failures -c opt --copt=-nvcc_options=disable-warnings --python_path=${PYTHON3} --incompatible_disable_deprecated_attr_params=false --define=no_tensorflow_py_deps=true ///tensorflow:libtensorflow_cc.so ///tensorflow:install_headers"
         WORKING_DIRECTORY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel
         LOGNAME build-${TARGET_TRIPLET}-rel
     )
@@ -122,19 +121,56 @@ if(CMAKE_HOST_WIN32)
     file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_cc.so.2.2.0 DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
     file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_cc.so.2 DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
     file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/liblibtensorflow_cc.so.2.2.0.ifso DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
-    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_cc.so.2.2.0 DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
-    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_cc.so.2 DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
-    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/liblibtensorflow_cc.so.2.2.0.ifso DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
 else()
     file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_cc.so.2.2.0 DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
     file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_framework.so.2.2.0 DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
     file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_cc.so.2 DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
     file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_framework.so.2 DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
-    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_cc.so.2.2.0 DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
-    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_framework.so.2.2.0 DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
-    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_cc.so.2 DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
-    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_framework.so.2 DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
 endif()
+
+#####################################################################
+# Try build debug version
+tensorflow_try_remove_recurse_wait(${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-dbg)
+file(MAKE_DIRECTORY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-dbg)
+file(GLOB SOURCES ${SOURCE_PATH}/*)
+file(COPY ${SOURCES} DESTINATION ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-dbg)
+
+message(STATUS "Configuring TensorFlow (Debug)")
+
+vcpkg_execute_required_process(
+    COMMAND ${PYTHON3} ${SOURCE_PATH}/configure.py
+    WORKING_DIRECTORY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-dbg
+    LOGNAME config-${TARGET_TRIPLET}-dbg
+)
+message(STATUS "Warning: Building TensorFlow (Debug) can take an hour or more.")
+
+if(CMAKE_HOST_WIN32)
+    vcpkg_execute_build_process(
+        COMMAND ${BASH} --noprofile --norc -c "${BAZEL} build --config=cuda --config=nonccl --verbose_failures -c dbg --copt=-nvcc_options=disable-warnings --python_path=${PYTHON3} --incompatible_disable_deprecated_attr_params=false --define=no_tensorflow_py_deps=true ///tensorflow:libtensorflow_cc.so ///tensorflow:install_headers"
+        WORKING_DIRECTORY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-dbg
+        LOGNAME build-${TARGET_TRIPLET}-dbg
+    )
+else()
+    vcpkg_execute_build_process(
+        COMMAND ${BAZEL} build --config=cuda --config=nonccl --verbose_failures -c dbg --python_path=${PYTHON3} --incompatible_disable_deprecated_attr_params=false --define=no_tensorflow_py_deps=true //tensorflow:libtensorflow_cc.so //tensorflow:install_headers
+        WORKING_DIRECTORY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-dbg
+        LOGNAME build-${TARGET_TRIPLET}-dbg
+    )
+endif()
+
+file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-dbg/bazel-bin/tensorflow/include/ DESTINATION ${CURRENT_PACKAGES_DIR}/include/tensorflow-external)
+
+if(CMAKE_HOST_WIN32)
+    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-dbg/bazel-bin/tensorflow/libtensorflow_cc.so.2.2.0 DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
+    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-dbg/bazel-bin/tensorflow/libtensorflow_cc.so.2 DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
+    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-dbg/bazel-bin/tensorflow/liblibtensorflow_cc.so.2.2.0.ifso DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
+else()
+    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-dbg/bazel-bin/tensorflow/libtensorflow_cc.so.2.2.0 DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
+    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-dbg/bazel-bin/tensorflow/libtensorflow_framework.so.2.2.0 DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
+    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-dbg/bazel-bin/tensorflow/libtensorflow_cc.so.2 DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
+    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-dbg/bazel-bin/tensorflow/libtensorflow_framework.so.2 DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
+endif()
+
 
 file(COPY ${SOURCE_PATH}/LICENSE DESTINATION ${CURRENT_PACKAGES_DIR}/share/tensorflow-cc)
 file(RENAME ${CURRENT_PACKAGES_DIR}/share/tensorflow-cc/LICENSE ${CURRENT_PACKAGES_DIR}/share/tensorflow-cc/copyright)
