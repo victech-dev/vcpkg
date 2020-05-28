@@ -11,7 +11,7 @@ endif()
 # config variables for ffi.h.in
 set(VERSION 3.3)
 
-set(KNOWN_PROCESSORS x86 x86_64 AMD64 ARM ARM64 armv7l i386)
+set(KNOWN_PROCESSORS x86 x86_64 AMD64 ARM ARM64 armv7l aarch64 i386)
 
 if(NOT CMAKE_SYSTEM_PROCESSOR IN_LIST KNOWN_PROCESSORS)
     message(FATAL_ERROR "Unknown processor: ${CMAKE_SYSTEM_PROCESSOR}")
@@ -19,6 +19,8 @@ endif()
 
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "ARM")
     set(TARGET ARM)
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
+    set(TARGET ARM64)
 elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "armv7l")
     set(TARGET ARM)
 elseif(CMAKE_SYSTEM_NAME MATCHES "BSD" AND CMAKE_SIZEOF_VOID_P EQUAL 4)
@@ -56,6 +58,8 @@ if ("${TARGET}" STREQUAL "ARM_WIN64")
     file(COPY src/aarch64/ffitarget.h DESTINATION ${CMAKE_BINARY_DIR}/include)
 elseif ("${TARGET}" STREQUAL "ARM_WIN32")
     file(COPY src/arm/ffitarget.h DESTINATION ${CMAKE_BINARY_DIR}/include)
+elseif ("${TARGET}" STREQUAL "ARM64")
+    file(COPY src/aarch64/ffitarget.h DESTINATION ${CMAKE_BINARY_DIR}/include)
 elseif ("${TARGET}" STREQUAL "ARM")
     file(COPY src/arm/ffitarget.h DESTINATION ${CMAKE_BINARY_DIR}/include)
 else()
@@ -79,6 +83,10 @@ set(FFI_SOURCES
 message (STATUS TARGET=${TARGET})
 
 if ("${TARGET}" STREQUAL "ARM_WIN64")
+    set(FFI_SOURCES
+        ${FFI_SOURCES}
+        src/aarch64/ffi.c)
+elseif("${TARGET}" STREQUAL "ARM64")
     set(FFI_SOURCES
         ${FFI_SOURCES}
         src/aarch64/ffi.c)
@@ -164,6 +172,8 @@ elseif("${TARGET}" STREQUAL "ARM_WIN32")
     add_assembly(src/arm/sysv_msvc_arm32.S)
 elseif("${TARGET}" STREQUAL "ARM_WIN64")
     add_assembly(src/aarch64/win64_armasm.S)
+elseif("${TARGET}" STREQUAL "ARM")
+    add_assembly(src/aarch64/sysv.S)
 elseif("${TARGET}" STREQUAL "ARM")
     add_assembly(src/arm/sysv.S)
 else()
