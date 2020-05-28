@@ -2,7 +2,7 @@ diff --git a/cmake/cpu.cmake b/cmake/cpu.cmake
 index ce7a69f..44fdb93 100644
 --- a/cmake/cpu.cmake
 +++ b/cmake/cpu.cmake
-@@ -55,6 +55,12 @@ if(${ANDROID})
+@@ -55,6 +55,11 @@ if(${ANDROID})
    endif()
  endif()
  
