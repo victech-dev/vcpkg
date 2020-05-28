@@ -4,7 +4,7 @@
 
 raspabian 빌드 지원을 위해서 수정한 ports들이 모여있음
 
-for short, run `./vcpkg install <>:arm-linux --overlay-triplet=./victech/ports_arm-linux`
+for short, run `./vcpkg install <>:arm-linux --overlay-ports=./victech/ports_arm-linux`
 
 ## tensorflow support
 
