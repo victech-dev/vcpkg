@@ -85,10 +85,16 @@ set(ENV{TF_NEED_IGNITE} 0)
 set(ENV{TF_NEED_ROCM} 0)
 set(ENV{TF_SET_ANDROID_WORKSPACE} 0)
 set(ENV{TF_DOWNLOAD_CLANG} 0)
-set(ENV{TF_NCCL_VERSION} 2.3)
 set(ENV{NCCL_INSTALL_PATH} "")
 set(ENV{CC_OPT_FLAGS} "/arch:AVX")
 set(ENV{TF_NEED_CUDA} 1)
+if (VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64") # assum Jetson Xavier with JetPack 4.3
+    set(ENV{TF_CUDA_VERSION} 10.0)
+    set(ENV{TF_CUDNN_VERSION} 7.6.3)
+    set(ENV{TF_CUDA_PATHS} "/usr/local/cuda,/usr")
+else()
+    set(ENV{TF_NCCL_VERSION} 2.3)
+endif()
 set(ENV{TF_CUDA_CLANG} 0)
 set(ENV{GCC_HOST_COMPILER_PATH} "/usr/bin/gcc")
 set(ENV{TF_CUDA_COMPUTE_CAPABILITIES} "7.2,7.5") # Jetson Xavier:7.2, RTX 2080 Ti:7.5, GTX 1650:7.5
@@ -102,15 +108,17 @@ vcpkg_execute_required_process(
 )
 message(STATUS "Warning: Building TensorFlow can take an hour or more.")
 
+# NOTE : --config=noaws added explicitly because of compile error in arm64-linux (Jetson Xavier)
+# NOTE : --noincompatible_do_not_split_linking_cmdline added because of linking error in arm64-linux (Jetson Xavier)
 if(CMAKE_HOST_WIN32)
     vcpkg_execute_build_process(
-        COMMAND ${BASH} --noprofile --norc -c "${BAZEL} build --config=cuda --verbose_failures -c opt --copt=-nvcc_options=disable-warnings --python_path=${PYTHON3} --incompatible_disable_deprecated_attr_params=false --define=no_tensorflow_py_deps=true ///tensorflow:libtensorflow_cc.so ///tensorflow:install_headers"
+        COMMAND ${BASH} --noprofile --norc -c "${BAZEL} build --config=cuda --config=noaws --verbose_failures -c opt --copt=-nvcc_options=disable-warnings --python_path=${PYTHON3} --noincompatible_disable_deprecated_attr_params --define=no_tensorflow_py_deps=true ///tensorflow:libtensorflow_cc.so ///tensorflow:install_headers"
         WORKING_DIRECTORY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel
         LOGNAME build-${TARGET_TRIPLET}-rel
     )
 else()
     vcpkg_execute_build_process(
-        COMMAND ${BAZEL} build --config=cuda --config=nonccl --verbose_failures -c opt --python_path=${PYTHON3} --incompatible_disable_deprecated_attr_params=false --define=no_tensorflow_py_deps=true //tensorflow:libtensorflow_cc.so //tensorflow:install_headers
+        COMMAND ${BAZEL} build --config=cuda --config=noaws --config=nonccl --verbose_failures -c opt --python_path=${PYTHON3} --noincompatible_do_not_split_linking_cmdline --noincompatible_disable_deprecated_attr_params --define=no_tensorflow_py_deps=true //tensorflow:libtensorflow_cc.so //tensorflow:install_headers
         WORKING_DIRECTORY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel
         LOGNAME build-${TARGET_TRIPLET}-rel
     )
