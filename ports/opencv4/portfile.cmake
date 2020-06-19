@@ -319,6 +319,7 @@ vcpkg_configure_cmake(
         -DWITH_PROTOBUF=ON
         -DWITH_TBB=${WITH_TBB}
         -DWITH_VTK=${WITH_VTK}
+        -DWITH_GTK=ON
         ###### WITH PROPERTIES explicitly disabled, they have problems with libraries if already installed by user and that are "involuntarily" found during install
         -DWITH_LAPACK=OFF
         ###### BUILD_options (mainly modules which require additional libraries)
