@@ -17,7 +17,11 @@ vcpkg_from_github(
         fix-build-error.patch # Fix namespace error
         add_io_bazel_rules_docker.patch
         add_custom_export_symbols.patch
-	    #use_patch_utility.patch
+        windows_tensorrt_1_tensorflow_bzl.patch
+        windows_tensorrt_2_segment_cc.patch
+        windows_tensorrt_3_segment_cc.patch
+        windows_tensorrt_4_convert_nodes_cc.patch
+        windows_tensorrt_5_convert_nodes_cc.patch
 )
 
 vcpkg_find_acquire_program(BAZEL2_0_0)
@@ -87,14 +91,12 @@ set(ENV{TF_DOWNLOAD_CLANG} 0)
 set(ENV{NCCL_INSTALL_PATH} "")
 set(ENV{CC_OPT_FLAGS} "/arch:AVX")
 set(ENV{TF_NEED_CUDA} 1)
+set(ENV{TF_NCCL_VERSION} 2.3)
+set(ENV{TF_NEED_TENSORRT} 1) # need tensorrt
 if (VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64") # assum Jetson Xavier with JetPack 4.3
     set(ENV{TF_CUDA_VERSION} 10.0)
     set(ENV{TF_CUDNN_VERSION} 7.6.3)
     set(ENV{TF_CUDA_PATHS} "/usr/local/cuda,/usr")
-    set(ENV{TF_NEED_TENSORRT} 1) # need tensorrt
-else()
-    set(ENV{TF_NCCL_VERSION} 2.3)
-    set(ENV{TF_NEED_TENSORRT} 0)
 endif()
 set(ENV{TF_CUDA_CLANG} 0)
 set(ENV{GCC_HOST_COMPILER_PATH} "/usr/bin/gcc")
@@ -114,7 +116,7 @@ message(STATUS "Warning: Building TensorFlow can take an hour or more.")
 # NOTE : --config=opt not set because of cpu compatability
 if(CMAKE_HOST_WIN32)
     vcpkg_execute_build_process(
-        COMMAND ${BASH} --noprofile --norc -c "${BAZEL} build --config=cuda --config=noaws --config=nogcp --config=nonccl --verbose_failures -c opt --python_path=${PYTHON3} --noincompatible_disable_deprecated_attr_params --define=no_tensorflow_py_deps=true ///tensorflow:libtensorflow_cc.so ///tensorflow:install_headers"
+        COMMAND ${BASH} --noprofile --norc -c "${BAZEL} build --config=cuda --verbose_failures -c opt --copt=-nvcc_options=disable-warnings --python_path=${PYTHON3} --noincompatible_disable_deprecated_attr_params --define=override_eigen_strong_inline=true --define=no_tensorflow_py_deps=true ///tensorflow:libtensorflow_cc.so ///tensorflow:install_headers"
         WORKING_DIRECTORY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel
         LOGNAME build-${TARGET_TRIPLET}-rel
     )

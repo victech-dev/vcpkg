@@ -1,0 +1,36 @@
+diff --git a/tensorflow/compiler/tf2tensorrt/convert/convert_nodes.cc b/tensorflow/compiler/tf2tensorrt/convert/convert_nodes.cc
+index fb6bdfe6..c05b7730 100644
+--- a/tensorflow/compiler/tf2tensorrt/convert/convert_nodes.cc
++++ b/tensorflow/compiler/tf2tensorrt/convert/convert_nodes.cc
+@@ -4568,12 +4568,13 @@ Status ConvertSplit(OpConverterParams* params) {
+   const auto& node_def = params->node_def;
+   TF_RETURN_IF_ERROR(
+       CheckInputsWeights(*params, {{"axis", true}, {"value", false}}));
+-  TF_RETURN_IF_ERROR(AllowDataTypes(*params, {
++  std::set<DataType> allowDataTypes = {
+     DataType::DT_FLOAT, DataType::DT_HALF,
+ #if IS_TRT_VERSION_GE(5, 1, 3, 1)
+         DataType::DT_INT32,
+ #endif
+-  }));
++  };
++  TF_RETURN_IF_ERROR(AllowDataTypes(*params, allowDataTypes));
+   int tf_axis = inputs.at(0).weights().GetSpan<int>()[0];
+   TFAttrs attrs(node_def);
+   const int num_split = attrs.get<int64>("num_split");
+@@ -4585,12 +4586,13 @@ Status ConvertUnpack(OpConverterParams* params) {
+   const auto& inputs = params->inputs;
+   const auto& node_def = params->node_def;
+   TF_RETURN_IF_ERROR(CheckInputsWeights(*params, {{"value", false}}));
+-  TF_RETURN_IF_ERROR(AllowDataTypes(*params, {
++  std::set<DataType> allowDataTypes = {
+     DataType::DT_FLOAT, DataType::DT_HALF,
+ #if IS_TRT_VERSION_GE(5, 1, 3, 1)
+         DataType::DT_INT32,
+ #endif
+-  }));
++  };
++  TF_RETURN_IF_ERROR(AllowDataTypes(*params, allowDataTypes));
+   // Input must be rank 1 or higher, since we can't unpack on axis 0.
+   if (inputs.at(0).GetTrtDims().nbDims == 0) {
+     return errors::Unimplemented(
