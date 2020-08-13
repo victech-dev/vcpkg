@@ -54,13 +54,9 @@ set(FFI_EXEC_TRAMPOLINE_TABLE 0)
 configure_file(include/ffi.h.in ${CMAKE_BINARY_DIR}/include/ffi.h)
 file(COPY ${FFI_CONFIG_FILE} DESTINATION ${CMAKE_BINARY_DIR})
 
-if ("${TARGET}" STREQUAL "ARM_WIN64")
+if ("${TARGET}" STREQUAL "ARM_WIN64" OR "${TARGET}" STREQUAL "ARM64")
     file(COPY src/aarch64/ffitarget.h DESTINATION ${CMAKE_BINARY_DIR}/include)
-elseif ("${TARGET}" STREQUAL "ARM_WIN32")
-    file(COPY src/arm/ffitarget.h DESTINATION ${CMAKE_BINARY_DIR}/include)
-elseif ("${TARGET}" STREQUAL "ARM64")
-    file(COPY src/aarch64/ffitarget.h DESTINATION ${CMAKE_BINARY_DIR}/include)
-elseif ("${TARGET}" STREQUAL "ARM")
+elseif ("${TARGET}" STREQUAL "ARM_WIN32" OR "${TARGET}" STREQUAL "ARM")
     file(COPY src/arm/ffitarget.h DESTINATION ${CMAKE_BINARY_DIR}/include)
 else()
     file(COPY src/x86/ffitarget.h DESTINATION ${CMAKE_BINARY_DIR}/include)
@@ -80,19 +76,11 @@ set(FFI_SOURCES
     src/prep_cif.c
     src/types.c)
 
-if ("${TARGET}" STREQUAL "ARM_WIN64")
+if ("${TARGET}" STREQUAL "ARM_WIN64" OR "${TARGET}" STREQUAL "ARM64")
     set(FFI_SOURCES
         ${FFI_SOURCES}
         src/aarch64/ffi.c)
-elseif("${TARGET}" STREQUAL "ARM64")
-    set(FFI_SOURCES
-        ${FFI_SOURCES}
-        src/aarch64/ffi.c)
-elseif("${TARGET}" STREQUAL "ARM")
-    set(FFI_SOURCES
-        ${FFI_SOURCES}
-        src/arm/ffi.c)
-elseif("${TARGET}" STREQUAL "ARM_WIN32")
+elseif("${TARGET}" STREQUAL "ARM_WIN32" OR "${TARGET}" STREQUAL "ARM")
     set(FFI_SOURCES
         ${FFI_SOURCES}
         src/arm/ffi.c)
