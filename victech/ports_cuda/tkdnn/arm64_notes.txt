@@ -1,0 +1,29 @@
+In jetson xavier, libnvinfer.so depends on libnvdla_compiler.so, libnvmedia.so, libEGL.so.1
+So, we added dependencies only for arm64-linux
+
+######
+
+dev@vic-pilot-11:/usr/lib/aarch64-linux-gnu$ lddtree ./libnvinfer.so.6.0.1
+libnvinfer.so.6.0.1 => ./libnvinfer.so.6.0.1 (interpreter => none)
+    libcudnn.so.7 => /usr/lib/aarch64-linux-gnu/libcudnn.so.7
+        librt.so.1 => /lib/aarch64-linux-gnu/librt.so.1
+        libpthread.so.0 => /lib/aarch64-linux-gnu/libpthread.so.0
+    libcublas.so.10.0 => /usr/local/cuda-10.0/lib64/libcublas.so.10.0
+    libcudart.so.10.0 => /usr/local/cuda-10.0/lib64/libcudart.so.10.0
+    libdl.so.2 => /lib/aarch64-linux-gnu/libdl.so.2
+    libnvdla_compiler.so => /usr/lib/aarch64-linux-gnu/tegra/libnvdla_compiler.so
+        libnvos.so => /usr/lib/aarch64-linux-gnu/tegra/libnvos.so
+    libnvmedia.so => /usr/lib/aarch64-linux-gnu/tegra/libnvmedia.so
+        libnvrm.so => /usr/lib/aarch64-linux-gnu/tegra/libnvrm.so
+        libnvrm_graphics.so => /usr/lib/aarch64-linux-gnu/tegra/libnvrm_graphics.so
+        libnvdc.so => /usr/lib/aarch64-linux-gnu/tegra/libnvdc.so
+            libnvimp.so => /usr/lib/aarch64-linux-gnu/tegra/libnvimp.so
+        libnvtvmr.so => /usr/lib/aarch64-linux-gnu/tegra/libnvtvmr.so
+        libnvparser.so => /usr/lib/aarch64-linux-gnu/tegra/libnvparser.so
+    libEGL.so.1 => /usr/lib/aarch64-linux-gnu/libEGL.so.1
+        libGLdispatch.so.0 => /usr/lib/aarch64-linux-gnu/libGLdispatch.so.0
+    libstdc++.so.6 => /usr/lib/aarch64-linux-gnu/libstdc++.so.6
+    libm.so.6 => /lib/aarch64-linux-gnu/libm.so.6
+    libgcc_s.so.1 => /lib/aarch64-linux-gnu/libgcc_s.so.1
+    libc.so.6 => /lib/aarch64-linux-gnu/libc.so.6
+    ld-linux-aarch64.so.1 => /lib/aarch64-linux-gnu/ld-linux-aarch64.so.1
