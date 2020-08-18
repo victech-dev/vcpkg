@@ -1,0 +1,6 @@
+Source: tensorrt
+Version: 6.0.1_victech
+Build-Depends: cuda,cudnn
+Supports: (windows|linux)&x64 | linux&arm64
+Description: a high-performance neural network inference optimizer and runtime engine
+Homepage: https://developer.nvidia.com/tensorrt
