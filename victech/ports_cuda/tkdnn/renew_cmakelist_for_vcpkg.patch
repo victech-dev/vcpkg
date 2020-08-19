@@ -253,7 +253,7 @@ index 8c8619d..71727fc 100644
 +    EXPORT tkDNNTargets 
 +    NAMESPACE tkDNN:: 
 +    FILE tkDNNTargets.cmake 
-+    DESTINATION share/tkDNN)
++    DESTINATION share/tkdnn)
 +
 +set(PACKAGE_VERSION 0.5.1)
 +include(CMakePackageConfigHelpers)
@@ -263,6 +263,6 @@ index 8c8619d..71727fc 100644
 +    COMPATIBILITY AnyNewerVersion)
 +install(FILES
 +  "${PROJECT_BINARY_DIR}/tkDNNConfigVersion.cmake"
-+  DESTINATION share/tkDNN
++  DESTINATION share/tkdnn
  )
 -
