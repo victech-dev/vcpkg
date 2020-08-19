@@ -24,7 +24,7 @@ find_dependency(CUDA)
 find_dependency(OpenCV)
 find_dependency(CUDNN)
 find_dependency(Eigen3)
-find_dependency(tensorrt)
+find_dependency(TensorRT)
 
 # Our library dependencies (contains definitions for IMPORTED targets)
 include("${tkDNN_CMAKE_DIR}/tkDNNTargets.cmake")

@@ -17,8 +17,16 @@ protobuf는 tensorflow 내부 버전과 맞추기 위해 특정 버전을 사용
 
 ## Usage
 
+for (x64|arm64)-linux
+
 ```
-./vcpkg install opencv4[contrib,core,dnn,jpeg,opengl,png,tiff,webp] boost protobuf libjpeg-turbo zlib realsense2 glog tensorflow-cc --triplet arm64-linux --overlay-ports=./victech/ports_boost/ --overlay-ports=./victech/ports_tensorflow/
+./vcpkg install opencv4[contrib,core,dnn,jpeg,opengl,png,tiff,webp] boost protobuf libjpeg-turbo zlib realsense2 glog tensorflow-cc darknet[opencv-cuda,cudnn] tkdnn --triplet arm64-linux --overlay-ports=./victech/ports_boost/ --overlay-ports=./victech/ports_tensorflow/
+```
+
+for x64-windows
+
+```
+./vcpkg install opencv4[contrib,core,dnn,jpeg,opengl,png,tiff,webp] boost protobuf libjpeg-turbo zlib realsense2 glog tensorflow-cc darknet[opencv-cuda,cudnn] --triplet x64-windows --overlay-ports=./victech/ports_boost/ --overlay-ports=./victech/ports_tensorflow/
 ```
 
 ## Triplet 별 참고
@@ -27,7 +35,13 @@ protobuf는 tensorflow 내부 버전과 맞추기 위해 특정 버전을 사용
 
 ubuntu 18.04 / WSL ubuntu 18.04 에서 테스트 되었음
 
+### x64-windows
+
+tkDNN은 windows를 지원하지 않는다.
+
 #### cuda toolkit & cuDNN 설치
+
+tensorflow는 vcpkg의 binary를 이용하지 않고, system의 binary를 직접 이용한다.
 
 https://victech.atlassian.net/wiki/spaces/DCSOFT/pages/45613136/CUDA+Toolkit+cuDNN
 

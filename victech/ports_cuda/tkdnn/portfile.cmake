@@ -8,6 +8,7 @@ vcpkg_from_github(
     HEAD_REF master
     PATCHES
       renew_cmakelist_for_vcpkg.patch
+      clean_up_include.patch
 )
 
 #make sure we don't use any integrated pre-built library nor any unnecessary CMake module

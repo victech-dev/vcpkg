@@ -1,0 +1,144 @@
+diff --git a/include/tkDNN/CenternetDetection.h b/include/tkDNN/CenternetDetection.h
+index 3c8cfbb..1e58970 100644
+--- a/include/tkDNN/CenternetDetection.h
++++ b/include/tkDNN/CenternetDetection.h
+@@ -3,7 +3,7 @@
+ 
+ #include "kernels.h"
+ #include <opencv2/videoio.hpp>
+-#include "opencv2/opencv.hpp"
++#include <opencv2/opencv.hpp>
+ #include <time.h>
+ #include <vector>
+ #include <numeric>      // std::iota
+diff --git a/include/tkDNN/DarknetParser.h b/include/tkDNN/DarknetParser.h
+index 29d1e8e..748eb3e 100644
+--- a/include/tkDNN/DarknetParser.h
++++ b/include/tkDNN/DarknetParser.h
+@@ -1,6 +1,6 @@
+ #pragma once
+ #include <iostream>
+-#include "tkDNN/tkdnn.h"
++#include "tkdnn.h"
+ 
+ namespace tk { namespace dnn {
+ 
+diff --git a/include/tkDNN/Int8BatchStream.h b/include/tkDNN/Int8BatchStream.h
+index 4349c1f..4e7b709 100644
+--- a/include/tkDNN/Int8BatchStream.h
++++ b/include/tkDNN/Int8BatchStream.h
+@@ -15,7 +15,7 @@
+ #include <unistd.h>
+ #include <mutex>
+ 
+-#include "NvInfer.h"
++#include <NvInfer.h>
+ #include "utils.h"
+ #include "tkdnn.h"
+ 
+diff --git a/include/tkDNN/Int8Calibrator.h b/include/tkDNN/Int8Calibrator.h
+index 4a0ea47..0c67e69 100644
+--- a/include/tkDNN/Int8Calibrator.h
++++ b/include/tkDNN/Int8Calibrator.h
+@@ -8,7 +8,7 @@
+ #include <stdint.h>
+ #include <iostream>
+ #include <string>
+-#include "NvInfer.h"
++#include <NvInfer.h>
+ 
+ #include <fstream>
+ #include <iomanip>
+diff --git a/include/tkDNN/Layer.h b/include/tkDNN/Layer.h
+index f2ec56d..c57d4ee 100644
+--- a/include/tkDNN/Layer.h
++++ b/include/tkDNN/Layer.h
+@@ -1,8 +1,8 @@
+ #ifndef LAYER_H
+ #define LAYER_H
+ 
+-#include<iostream>
+-#include<vector>
++#include <iostream>
++#include <vector>
+ #include "utils.h"
+ #include "Network.h"
+ 
+diff --git a/include/tkDNN/MobilenetDetection.h b/include/tkDNN/MobilenetDetection.h
+index 9a5fedc..09d8fa9 100644
+--- a/include/tkDNN/MobilenetDetection.h
++++ b/include/tkDNN/MobilenetDetection.h
+@@ -2,7 +2,7 @@
+ #define MOBILENETDETECTION_H
+ 
+ #include <opencv2/videoio.hpp>
+-#include "opencv2/opencv.hpp"
++#include <opencv2/opencv.hpp>
+ 
+ #include "DetectionNN.h"
+ 
+diff --git a/include/tkDNN/NetworkRT.h b/include/tkDNN/NetworkRT.h
+index 66b4f3d..7789e38 100644
+--- a/include/tkDNN/NetworkRT.h
++++ b/include/tkDNN/NetworkRT.h
+@@ -5,7 +5,7 @@
+ #include "utils.h"
+ #include "Network.h"
+ #include "Layer.h"
+-#include "NvInfer.h"
++#include <NvInfer.h>
+ 
+ namespace tk { namespace dnn {
+ 
+diff --git a/include/tkDNN/Yolo3Detection.h b/include/tkDNN/Yolo3Detection.h
+index 100a720..3c36ca8 100644
+--- a/include/tkDNN/Yolo3Detection.h
++++ b/include/tkDNN/Yolo3Detection.h
+@@ -1,7 +1,7 @@
+ #ifndef Yolo3Detection_H
+ #define Yolo3Detection_H
+ #include <opencv2/videoio.hpp>
+-#include "opencv2/opencv.hpp"
++#include <opencv2/opencv.hpp>
+ 
+ #include "DetectionNN.h"
+ 
+diff --git a/include/tkDNN/pluginsRT/Int8Calibrator.h b/include/tkDNN/pluginsRT/Int8Calibrator.h
+index ad759bf..9815db8 100644
+--- a/include/tkDNN/pluginsRT/Int8Calibrator.h
++++ b/include/tkDNN/pluginsRT/Int8Calibrator.h
+@@ -3,7 +3,7 @@
+ #include <algorithm>
+ #include <iterator>
+ 
+-#include "NvInfer.h"
++#include <NvInfer.h>
+ 
+ class BatchStream
+ {
+diff --git a/include/tkDNN/test.h b/include/tkDNN/test.h
+index 4e238ff..aaad12c 100644
+--- a/include/tkDNN/test.h
++++ b/include/tkDNN/test.h
+@@ -1,5 +1,5 @@
+ 
+-#include <tkdnn.h>
++#include "tkdnn.h"
+ int testInference(std::vector<std::string> input_bins, std::vector<std::string> output_bins, 
+     tk::dnn::Network *net, tk::dnn::NetworkRT *netRT = nullptr) {
+ 
+diff --git a/include/tkDNN/utils.h b/include/tkDNN/utils.h
+index 538a3f3..74d4bb6 100644
+--- a/include/tkDNN/utils.h
++++ b/include/tkDNN/utils.h
+@@ -7,8 +7,8 @@
+ #include <iomanip>
+ #include <stdlib.h>
+ 
+-#include "cuda.h"
+-#include "cuda_runtime_api.h"
++#include <cuda.h>
++#include <cuda_runtime_api.h>
+ #include <cublas_v2.h>
+ #include <cudnn.h>
+ 
