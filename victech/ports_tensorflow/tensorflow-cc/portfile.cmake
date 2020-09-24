@@ -91,7 +91,7 @@ set(ENV{TF_DOWNLOAD_CLANG} 0)
 set(ENV{NCCL_INSTALL_PATH} "")
 set(ENV{CC_OPT_FLAGS} "/arch:AVX")
 set(ENV{TF_NEED_CUDA} 1)
-set(ENV{TF_NCCL_VERSION} 2.3)
+set(ENV{TF_NCCL_VERSION} 2.7)
 set(ENV{TF_NEED_TENSORRT} 1) # need tensorrt
 if (VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64") # assum Jetson Xavier with JetPack 4.3
     set(ENV{TF_CUDA_VERSION} 10.0)
