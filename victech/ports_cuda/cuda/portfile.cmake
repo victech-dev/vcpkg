@@ -4,10 +4,28 @@
 
 #note: this port must be kept in sync with CUDNN port: every time one is upgraded, the other must be too
 if(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
-    # for jetpack 4.3
-    set(CUDA_REQUIRED_VERSION "10.0.0")
+    set(error_code 1)
+    execute_process(
+        COMMAND dpkg-query --show nvidia-l4t-core
+        OUTPUT_VARIABLE NVIDIA_L4T_CORE_OUTPUT
+        RESULT_VARIABLE error_code)
+    if (error_code)
+        message(FATAL_ERROR "Could not execute dpkg-query command to get L4T version")
+    endif()
+
+    # SampleOutput: nvidia-l4t-core 32.4.3-20200625213407
+    string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" L4T_VERSION ${NVIDIA_L4T_CORE_OUTPUT})
+    message(STATUS "NVIDIA L4T Core: ${L4T_VERSION}")
+
+    if (L4T_VERSION VERSION_LESS "32.4.3")
+        # for jetpack 4.3
+        set(CUDA_REQUIRED_VERSION "10.0.0")
+    else()
+        # for jetpack 4.4
+        set(CUDA_REQUIRED_VERSION "10.2.0")
+    endif()
 else()
-    set(CUDA_REQUIRED_VERSION "10.1.0")
+    set(CUDA_REQUIRED_VERSION "11.0.0")
 endif()
 
 set(CUDA_PATHS 
@@ -77,13 +95,11 @@ endif()
 # Copyright (c) 2005-2016 NVIDIA Corporation
 # Built on Sat_Sep__3_19:05:48_CDT_2016
 # Cuda compilation tools, release 8.0, V8.0.44
-string(REGEX MATCH "V([0-9]+)\\.([0-9]+)\\.([0-9]+)" CUDA_VERSION ${NVCC_OUTPUT})
-message(STATUS "Found CUDA ${CUDA_VERSION}")
-set(CUDA_VERSION_MAJOR ${CMAKE_MATCH_1})
-set(CUDA_VERSION_MINOR ${CMAKE_MATCH_2})
-set(CUDA_VERSION_PATCH ${CMAKE_MATCH_3})
+string(REGEX MATCH "V([0-9]+\\.[0-9]+\\.[0-9]+)" CUDA_VERSION ${NVCC_OUTPUT})
+set(CUDA_VERSION ${CMAKE_MATCH_1})
+message(STATUS "Found CUDA: ${CUDA_VERSION}")
 
-if (CUDA_VERSION_MAJOR LESS 10 AND CUDA_VERSION_MINOR LESS 1)
+if (CUDA_VERSION VERSION_LESS CUDA_REQUIRED_VERSION)
     message(FATAL_ERROR "CUDA ${CUDA_VERSION} found, but v${CUDA_REQUIRED_VERSION} is required. Please download and install a more recent version of CUDA from:"
                         "\n    https://developer.nvidia.com/cuda-downloads\n")
 endif()
