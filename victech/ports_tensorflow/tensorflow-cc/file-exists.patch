@@ -1,8 +1,8 @@
 diff --git a/configure.py b/configure.py
-index 43af22d..7989b1f 100644
+index da6af8f8..647fd48e 100644
 --- a/configure.py
 +++ b/configure.py
-@@ -183,7 +183,7 @@ def get_python_path(environ_cp, python_bin_path):
+@@ -190,7 +190,7 @@ def get_python_path(environ_cp, python_bin_path):
  
    paths = []
    for path in all_paths:

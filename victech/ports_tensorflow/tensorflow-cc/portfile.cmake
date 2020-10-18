@@ -9,23 +9,19 @@ endif()
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO tensorflow/tensorflow
-    REF v2.2.0
-    SHA512 94a2663497d333d543f363e9fea94fbcfdcdbbc0dfbaf009ba9181a808713aeb78f9b8805f56bea5fd3925a36f105427b3996795750589f378d8afbdadc2b86d
+    REF v2.3.1
+    SHA512 e497ef4564f50abf9f918be4522cf702f4cf945cb1ebf83af1386ac4ddc7373b3ba70c7f803f8ca06faf2c6b5396e60b1e0e9b97bfbd667e733b08b6e6d70ef0
     HEAD_REF master
     PATCHES
         file-exists.patch # required or otherwise it cant find python lib path on windows
         fix-build-error.patch # Fix namespace error
         add_io_bazel_rules_docker.patch
         add_custom_export_symbols.patch
-        windows_tensorrt_1_tensorflow_bzl.patch
-        windows_tensorrt_2_segment_cc.patch
-        windows_tensorrt_3_segment_cc.patch
-        windows_tensorrt_4_convert_nodes_cc.patch
-        windows_tensorrt_5_convert_nodes_cc.patch
+        fix-windows-tensorrt.patch
 )
 
-vcpkg_find_acquire_program(BAZEL2_0_0)
-set(BAZEL ${BAZEL2_0_0})
+vcpkg_find_acquire_program(BAZEL3_2_0)
+set(BAZEL ${BAZEL3_2_0})
 get_filename_component(BAZEL_DIR "${BAZEL}" DIRECTORY)
 vcpkg_add_to_path(PREPEND ${BAZEL_DIR})
 set(ENV{BAZEL_BIN_PATH} "${BAZEL}")
@@ -33,7 +29,7 @@ set(ENV{BAZEL_BIN_PATH} "${BAZEL}")
 # TODO Tensorflow2.0 cannot built with python-embed 
 #vcpkg_find_acquire_program(PYTHON3)
 if(CMAKE_HOST_WIN32)
-    set(PYTHON3 "C:/Users/dev/AppData/Local/Programs/Python/Python37/python.exe")
+    set(PYTHON3 "$ENV{LOCALAPPDATA}/Programs/Python/Python37/python.exe")
 else()
     set(PYTHON3 "/usr/bin/python3")
 endif()
@@ -59,6 +55,7 @@ if(CMAKE_HOST_WIN32)
     vcpkg_acquire_msys(MSYS_ROOT PACKAGES unzip patch diffutils git)
     set(BASH ${MSYS_ROOT}/usr/bin/bash.exe)
     set(ENV{BAZEL_SH} ${MSYS_ROOT}/usr/bin/bash.exe)
+    vcpkg_add_to_path(PREPEND ${MSYS_ROOT}/usr/bin)
 
     set(ENV{BAZEL_VS} $ENV{VSInstallDir})
     set(ENV{BAZEL_VC} $ENV{VCInstallDir})
@@ -93,9 +90,9 @@ set(ENV{CC_OPT_FLAGS} "/arch:AVX")
 set(ENV{TF_NEED_CUDA} 1)
 set(ENV{TF_NCCL_VERSION} 2.7)
 set(ENV{TF_NEED_TENSORRT} 1) # need tensorrt
-if (VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64") # assum Jetson Xavier with JetPack 4.3
-    set(ENV{TF_CUDA_VERSION} 10.0)
-    set(ENV{TF_CUDNN_VERSION} 7.6.3)
+if (VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64") # assum Jetson Xavier with JetPack 4.4
+    set(ENV{TF_CUDA_VERSION} 10.2)
+    set(ENV{TF_CUDNN_VERSION} 8.0.0)
     set(ENV{TF_CUDA_PATHS} "/usr/local/cuda,/usr")
 endif()
 set(ENV{TF_CUDA_CLANG} 0)
@@ -114,9 +111,10 @@ message(STATUS "Warning: Building TensorFlow can take an hour or more.")
 # NOTE : --config=noaws added explicitly because of compile error in arm64-linux (Jetson Xavier)
 # NOTE : --noincompatible_do_not_split_linking_cmdline added because of linking error in arm64-linux (Jetson Xavier)
 # NOTE : --config=opt not set because of cpu compatability
+# NOTE : --copt=-DTHRUST_IGNORE_CUB_VERSION_CHECK https://github.com/tensorflow/tensorflow/issues/41803
 if(CMAKE_HOST_WIN32)
     vcpkg_execute_build_process(
-        COMMAND ${BASH} --noprofile --norc -c "${BAZEL} build --config=cuda --verbose_failures -c opt --copt=-nvcc_options=disable-warnings --python_path=${PYTHON3} --noincompatible_disable_deprecated_attr_params --define=override_eigen_strong_inline=true --define=no_tensorflow_py_deps=true ///tensorflow:libtensorflow_cc.so ///tensorflow:install_headers"
+        COMMAND ${BASH} --noprofile --norc -c "${BAZEL} build --config=cuda --verbose_failures -c opt --copt=-DTHRUST_IGNORE_CUB_VERSION_CHECK --copt=-nvcc_options=disable-warnings --python_path=${PYTHON3} --noincompatible_disable_deprecated_attr_params --define=override_eigen_strong_inline=true --define=no_tensorflow_py_deps=true ///tensorflow:libtensorflow_cc.so ///tensorflow:install_headers"
         WORKING_DIRECTORY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel
         LOGNAME build-${TARGET_TRIPLET}-rel
     )
@@ -131,19 +129,19 @@ endif()
 file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/include/ DESTINATION ${CURRENT_PACKAGES_DIR}/include/tensorflow-external)
 
 if(CMAKE_HOST_WIN32)
-    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_cc.so.2.2.0 DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
+    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_cc.so.2.3.1 DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
     file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_cc.so.2 DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
-    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/liblibtensorflow_cc.so.2.2.0.ifso DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
-    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_cc.so.2.2.0 DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
+    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/liblibtensorflow_cc.so.2.3.1.ifso DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
+    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_cc.so.2.3.1 DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
     file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_cc.so.2 DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
-    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/liblibtensorflow_cc.so.2.2.0.ifso DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
+    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/liblibtensorflow_cc.so.2.3.1.ifso DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
 else()
-    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_cc.so.2.2.0 DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
-    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_framework.so.2.2.0 DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
+    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_cc.so.2.3.1 DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
+    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_framework.so.2.3.1 DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
     file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_cc.so.2 DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
     file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_framework.so.2 DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
-    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_cc.so.2.2.0 DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
-    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_framework.so.2.2.0 DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
+    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_cc.so.2.3.1 DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
+    file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_framework.so.2.3.1 DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
     file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_cc.so.2 DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
     file(COPY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel/bazel-bin/tensorflow/libtensorflow_framework.so.2 DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
 endif()

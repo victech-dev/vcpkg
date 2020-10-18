@@ -1,5 +1,5 @@
 diff --git a/WORKSPACE b/WORKSPACE
-index ad645add..ed7f228c 100644
+index ea741c31..2ee63170 100644
 --- a/WORKSPACE
 +++ b/WORKSPACE
 @@ -2,6 +2,14 @@ workspace(name = "org_tensorflow")

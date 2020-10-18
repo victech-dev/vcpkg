@@ -1,8 +1,8 @@
 diff --git a/tensorflow/tools/def_file_filter/def_file_filter.py.tpl b/tensorflow/tools/def_file_filter/def_file_filter.py.tpl
-index 883a4fa2..e3bc5a8c 100644
+index 1049939c..5b984058 100644
 --- a/tensorflow/tools/def_file_filter/def_file_filter.py.tpl
 +++ b/tensorflow/tools/def_file_filter/def_file_filter.py.tpl
-@@ -207,6 +207,53 @@ def main():
+@@ -250,6 +250,53 @@ def main():
      def_fp.write("EXPORTS\n")
      def_fp.write("\t ??1OpDef@tensorflow@@UEAA@XZ\n")
  
@@ -30,7 +30,7 @@ index 883a4fa2..e3bc5a8c 100644
 +    def_fp.write("\t ??1Tensor@tensorflow@@QEAA@XZ\n")
 +    def_fp.write("\t ??0Tensor@tensorflow@@QEAA@W4DataType@1@AEBVTensorShape@1@@Z\n")
 +    def_fp.write("\t ??0?$TensorShapeBase@VTensorShape@tensorflow@@@tensorflow@@QEAA@XZ\n")
-+    def_fp.write("\t ??0?$TensorShapeBase@VTensorShape@tensorflow@@@tensorflow@@QEAA@V?$Span@$$CB_J@absl@@@Z\n")
++    def_fp.write("\t ??0?$TensorShapeBase@VTensorShape@tensorflow@@@tensorflow@@QEAA@V?$Span@$$CB_J@lts_2020_02_25@absl@@@Z\n")
 +    def_fp.write("\t ?DestructorOutOfLine@TensorShapeRep@tensorflow@@AEAAXXZ\n")
 +    def_fp.write("\t ?TfCheckOpHelperOutOfLine@tensorflow@@YAPEAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AEBVStatus@1@PEBD@Z\n")
 +    def_fp.write("\t ?DebugString@Tensor@tensorflow@@QEBA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ\n")

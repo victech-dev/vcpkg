@@ -1,8 +1,8 @@
 diff --git a/tensorflow/core/platform/default/logging.h b/tensorflow/core/platform/default/logging.h
-index 99dd6de..3cbe8ed 100644
+index f60deb43..5c6ced4a 100644
 --- a/tensorflow/core/platform/default/logging.h
 +++ b/tensorflow/core/platform/default/logging.h
-@@ -82,13 +82,13 @@ class LogMessageFatal : public LogMessage {
+@@ -97,13 +97,13 @@ class LogMessageNull : public std::basic_ostringstream<char> {
  };
  
  #define _TF_LOG_INFO \
