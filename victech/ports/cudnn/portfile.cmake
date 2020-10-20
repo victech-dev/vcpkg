@@ -37,32 +37,10 @@ if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x64")
       NO_REMOVE_ONE_LEVEL
   )
 else()
-  # arm64 xavier jetpack 4.3 or 4.4
-  # assume build on xaiver dev-kit itself
-  set(error_code 1)
-  execute_process(
-      COMMAND dpkg-query --show nvidia-l4t-core
-      OUTPUT_VARIABLE NVIDIA_L4T_CORE_OUTPUT
-      RESULT_VARIABLE error_code)
-  if (error_code)
-      message(FATAL_ERROR "Could not execute dpkg-query command to get L4T version")
-  endif()
-
-  # SampleOutput: nvidia-l4t-core 32.4.3-20200625213407
-  string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" L4T_VERSION ${NVIDIA_L4T_CORE_OUTPUT})
-  message(STATUS "NVIDIA L4T Core: ${L4T_VERSION}")
-
-  if (L4T_VERSION VERSION_LESS "32.4.3")
-      # for jetpack 4.3
-      set(CUDNN_VERSION "7.6.3")
-      set(INCLUDE_PATH "/usr/include")
-      set(SOURCE_PATH "/usr/lib/aarch64-linux-gnu")
-  else()
-      # for jetpack 4.4
-      set(CUDNN_VERSION "8.0.0")
-      set(INCLUDE_PATH "/usr/include")
-      set(SOURCE_PATH "/usr/lib/aarch64-linux-gnu")
-  endif()
+  # assume jetpack 4.4
+  set(CUDNN_VERSION "8.0.0")
+  set(INCLUDE_PATH "/usr/include")
+  set(SOURCE_PATH "/usr/lib/aarch64-linux-gnu")
 endif()
 
 string(REPLACE "." ";" VERSION_LIST ${CUDNN_VERSION})

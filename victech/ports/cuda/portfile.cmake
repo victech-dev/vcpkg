@@ -4,26 +4,8 @@
 
 #note: this port must be kept in sync with CUDNN port: every time one is upgraded, the other must be too
 if(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
-    set(error_code 1)
-    execute_process(
-        COMMAND dpkg-query --show nvidia-l4t-core
-        OUTPUT_VARIABLE NVIDIA_L4T_CORE_OUTPUT
-        RESULT_VARIABLE error_code)
-    if (error_code)
-        message(FATAL_ERROR "Could not execute dpkg-query command to get L4T version")
-    endif()
-
-    # SampleOutput: nvidia-l4t-core 32.4.3-20200625213407
-    string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" L4T_VERSION ${NVIDIA_L4T_CORE_OUTPUT})
-    message(STATUS "NVIDIA L4T Core: ${L4T_VERSION}")
-
-    if (L4T_VERSION VERSION_LESS "32.4.3")
-        # for jetpack 4.3
-        set(CUDA_REQUIRED_VERSION "10.0.0")
-    else()
-        # for jetpack 4.4
-        set(CUDA_REQUIRED_VERSION "10.2.0")
-    endif()
+    # assume jetpack 4.4
+    set(CUDA_REQUIRED_VERSION "10.2.0")
 else()
     set(CUDA_REQUIRED_VERSION "11.0.0")
 endif()
