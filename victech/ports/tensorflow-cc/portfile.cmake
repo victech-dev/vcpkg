@@ -114,28 +114,23 @@ vcpkg_execute_required_process(
 )
 message(STATUS "Warning: Building TensorFlow can take an hour or more.")
 
-# NOTE : --config=noaws added explicitly because of compile error in arm64-linux (Jetson Xavier)
-# NOTE : --config=opt not set because of cpu compatability
-# NOTE : --copt=-DTHRUST_IGNORE_CUB_VERSION_CHECK https://github.com/tensorflow/tensorflow/issues/41803
 if(CMAKE_HOST_WIN32)
+    # NOTE : noaws, nogcp, nonccl not required here, since these are opt-out by default and bazel spits out error
+    # NOTE : --copt=-DTHRUST_IGNORE_CUB_VERSION_CHECK https://github.com/tensorflow/tensorflow/issues/41803
     vcpkg_execute_build_process(
         COMMAND ${BASH} --noprofile --norc -c "${BAZEL} build \
             --verbose_failures \
-            --config=noaws --config=nogcp --config=nonccl \
-             -c opt \
-             --define=override_eigen_strong_inline=true \
-             --define=no_tensorflow_py_deps=true \
-             ///tensorflow:libtensorflow_cc.so ///tensorflow:install_headers"
+            -c opt --config=opt --define=no_tensorflow_py_deps=true --copt=-DTHRUST_IGNORE_CUB_VERSION_CHECK --define=override_eigen_strong_inline=true \
+            ///tensorflow:libtensorflow_cc.so ///tensorflow:install_headers"
         WORKING_DIRECTORY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel
         LOGNAME build-${TARGET_TRIPLET}-rel
     )
 else()
+    # NOTE : --config=noaws added explicitly because of compile error in arm64-linux (Jetson Xavier)
     vcpkg_execute_build_process(
         COMMAND ${BAZEL} build 
-            --verbose_failures 
-            --config=noaws --config=nogcp --config=nonccl
-            -c opt
-            --define=no_tensorflow_py_deps=true
+            --verbose_failures --config=noaws --config=nogcp --config=nonccl
+            -c opt --config=opt --define=no_tensorflow_py_deps=true
             //tensorflow:libtensorflow_cc.so //tensorflow:install_headers
         WORKING_DIRECTORY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel
         LOGNAME build-${TARGET_TRIPLET}-rel
