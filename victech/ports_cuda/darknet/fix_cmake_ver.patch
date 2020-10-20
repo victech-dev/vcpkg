@@ -1,0 +1,10 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 4c7224e..c364a82 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1,4 +1,4 @@
+-cmake_minimum_required(VERSION 3.12)
++cmake_minimum_required(VERSION 3.17)
+ 
+ set(Darknet_MAJOR_VERSION 0)
+ set(Darknet_MINOR_VERSION 2)
