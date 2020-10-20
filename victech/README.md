@@ -19,19 +19,19 @@ protobuf는 tensorflow 내부 버전과 맞추기 위해 특정 버전을 사용
 for arm64-linux
 
 ```
-./vcpkg install opencv4[contrib,core,dnn,jpeg,opengl,png,tiff,webp] boost protobuf libjpeg-turbo zlib realsense2 glog tensorflow-cc darknet[opencv-cuda,cudnn] tkdnn freetype harfbuzz --triplet arm64-linux --overlay-ports=./victech/ports_cuda/ --overlay-ports=./victech/ports_boost/ --overlay-ports=./victech/ports_tensorflow/
+./vcpkg install opencv4[contrib,core,cuda,dnn,ffmpeg,jpeg,opengl,png,tiff,webp] boost protobuf libjpeg-turbo zlib realsense2 glog tensorflow-cc darknet[opencv-cuda,cudnn] tkdnn freetype harfbuzz --triplet arm64-linux --overlay-ports=./victech/ports
 ```
 
 for x64-linux
 
 ```
-./vcpkg install opencv4[contrib,core,dnn,jpeg,opengl,png,tiff,webp] boost protobuf libjpeg-turbo zlib realsense2 glog tensorflow-cc darknet[opencv-cuda,cudnn] tkdnn freetype harfbuzz --triplet x64-linux --overlay-ports=./victech/ports_cuda/ --overlay-ports=./victech/ports_boost/ --overlay-ports=./victech/ports_tensorflow/
+./vcpkg install opencv4[contrib,core,cuda,dnn,ffmpeg,jpeg,opengl,png,tiff,webp] boost protobuf libjpeg-turbo zlib realsense2 glog tensorflow-cc darknet[opencv-cuda,cudnn] tkdnn freetype harfbuzz --triplet x64-linux --overlay-ports=./victech/ports
 ```
 
 for x64-windows
 
 ```
-./vcpkg install opencv4[contrib,core,dnn,jpeg,opengl,png,tiff,webp] boost protobuf libjpeg-turbo zlib realsense2 glog tensorflow-cc darknet[opencv-cuda,cudnn] freetype harfbuzz --triplet x64-windows --overlay-ports=./victech/ports_boost/ --overlay-ports=./victech/ports_tensorflow/
+./vcpkg install opencv4[contrib,core,cuda,dnn,ffmpeg,jpeg,opengl,png,tiff,webp] boost protobuf libjpeg-turbo zlib realsense2 glog tensorflow-cc darknet[opencv-cuda,cudnn] freetype harfbuzz --triplet x64-windows --overlay-ports=./victech/ports
 ```
 
 ## Triplet 별 참고
