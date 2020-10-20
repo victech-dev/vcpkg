@@ -11,20 +11,20 @@ endif()
 vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY ONLY_DYNAMIC_CRT)
 
 #note: this port must be kept in sync with CUDA,cudnn port: every time one is upgraded, the other must be too
-set(TENSORRT_VERSION "6.0.1")
+set(TENSORRT_VERSION "7.1.3")
 
 if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x64")
   # original download
   # https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/
 
-  set(TENSORRT_FULL_VERSION "${TENSORRT_VERSION}-cuda10.1")
+  set(TENSORRT_FULL_VERSION "${TENSORRT_VERSION}-cuda11.0")
 
   if(VCPKG_TARGET_IS_WINDOWS)
-    set(TENSORRT_DOWNLOAD_LINK "http://race.victech.io:8082/download/vcpkg_tensorrt/tensorrt/windows10.x86_x64/tensorrt-${TENSORRT_VERSION}.win.tar.gz")
-    set(SHA512_TENSORRT "7596a2776baa071b5e8a74bdf4102429b25455be1e5519644daeae5d3a3060dd98d8ff4594549b16c3d0a3b38cba71edcc9b7e2a3ace8ff2a215ebce7064cf9e")
+    set(TENSORRT_DOWNLOAD_LINK "http://race.victech.io:8082/download/vcpkg_tensorrt/tensorrt/windows10.x86_x64/tensorrt-${TENSORRT_FULL_VERSION}.win.tar.gz")
+    set(SHA512_TENSORRT "234effd23aae0db204602310356106e8c98ec807440f23544bccbf812fb44bb26344015623441a39400a4097709a480216bf0fefede397a1b35c52944f95b788")
     set(TENSORRT_OS "windows")
   elseif(VCPKG_TARGET_IS_LINUX)
-    set(TENSORRT_DOWNLOAD_LINK "http://race.victech.io:8082/download/vcpkg_tensorrt/tensorrt/amd64/tensorrt-${TENSORRT_VERSION}.amd64.tar.gz")
+    set(TENSORRT_DOWNLOAD_LINK "http://race.victech.io:8082/download/vcpkg_tensorrt/tensorrt/amd64/tensorrt-${TENSORRT_FULL_VERSION}.amd64.tar.gz")
     set(SHA512_TENSORRT "9caf5cae5b16c6fa087de9ce791d1bbc93ebbc3cd5c90e293747808c4cc25a35f5b57a1f13e2a7c421ec0784cb47aa9919ec0f4b84e86c5949a36248dad85875")
     set(TENSORRT_OS "linux")
   endif()
@@ -32,12 +32,12 @@ else()
   # arm64 xavier 
   # files are gathered from jetpack 4.3
 
-  set(TENSORRT_FULL_VERSION "${TENSORRT_VERSION}-cuda10.0") # note jetpack doesn't support 10.1
+  set(TENSORRT_FULL_VERSION "${TENSORRT_VERSION}-cuda10.2") # for cuda of jetpack 4.4
 
   if(VCPKG_TARGET_IS_WINDOWS)
     message(FATAL_ERROR "This port is only for Linux")
   elseif(VCPKG_TARGET_IS_LINUX)
-    set(TENSORRT_DOWNLOAD_LINK "http://race.victech.io:8082/download/vcpkg_tensorrt/tensorrt/arm64/tensorrt-${TENSORRT_VERSION}.arm64.tar.gz")
+    set(TENSORRT_DOWNLOAD_LINK "http://race.victech.io:8082/download/vcpkg_tensorrt/tensorrt/arm64/tensorrt-${TENSORRT_FULL_VERSION}.arm64.tar.gz")
     set(SHA512_TENSORRT "c1ba9146507f1b9a99a4e24dfe56e2d8ca5fcb287ffc2687481d5237a46c35423e6cff5c6e729cae87c04de9118c0c0c13ea710a862c98bab5b731aa2e260435")
     set(TENSORRT_OS "linux")
   endif()
