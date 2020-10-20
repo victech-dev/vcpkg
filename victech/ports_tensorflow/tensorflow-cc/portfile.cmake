@@ -86,8 +86,13 @@ set(ENV{TF_NEED_ROCM} 0)
 set(ENV{TF_SET_ANDROID_WORKSPACE} 0)
 set(ENV{TF_DOWNLOAD_CLANG} 0)
 set(ENV{NCCL_INSTALL_PATH} "")
-set(ENV{CC_OPT_FLAGS} "/arch:AVX")
+if (VCPKG_TARGET_IS_WINDOWS)
+    set(ENV{CC_OPT_FLAGS} "/arch:AVX")
+else()
+    set(ENV{CC_OPT_FLAGS} "-march=native -Wno-sign-compare")
+endif()
 set(ENV{TF_NEED_CUDA} 1)
+set(ENV{TF_CONFIGURE_IOS} 0)
 set(ENV{TF_NCCL_VERSION} "")
 set(ENV{TF_NEED_TENSORRT} 1) # need tensorrt
 set(ENV{TF_TENSORRT_VERSION} 7.1.3) # tensorrt version
@@ -110,18 +115,45 @@ vcpkg_execute_required_process(
 message(STATUS "Warning: Building TensorFlow can take an hour or more.")
 
 # NOTE : --config=noaws added explicitly because of compile error in arm64-linux (Jetson Xavier)
-# NOTE : --noincompatible_do_not_split_linking_cmdline added because of linking error in arm64-linux (Jetson Xavier)
 # NOTE : --config=opt not set because of cpu compatability
 # NOTE : --copt=-DTHRUST_IGNORE_CUB_VERSION_CHECK https://github.com/tensorflow/tensorflow/issues/41803
 if(CMAKE_HOST_WIN32)
     vcpkg_execute_build_process(
-        COMMAND ${BASH} --noprofile --norc -c "${BAZEL} build --config=cuda --verbose_failures -c opt --copt=-DTHRUST_IGNORE_CUB_VERSION_CHECK --copt=-nvcc_options=disable-warnings --python_path=${PYTHON3} --noincompatible_disable_deprecated_attr_params --define=override_eigen_strong_inline=true --define=no_tensorflow_py_deps=true ///tensorflow:libtensorflow_cc.so ///tensorflow:install_headers"
+        COMMAND ${BASH} --noprofile --norc -c "${BAZEL} build \
+            --verbose_failures \
+            --config=cuda \
+            --config=noaws \
+            --config=nogcp \
+            --config=nonccl \
+             --python_path=${PYTHON3} \
+             -c opt \
+             --copt=/arch:AVX \
+             --copt=-DTHRUST_IGNORE_CUB_VERSION_CHECK \
+             --copt=-nvcc_options=disable-warnings \
+             --define=with_default_optimizations=true \
+             --define=override_eigen_strong_inline=true \
+             --define=no_tensorflow_py_deps=true \
+             ///tensorflow:libtensorflow_cc.so ///tensorflow:install_headers"
         WORKING_DIRECTORY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel
         LOGNAME build-${TARGET_TRIPLET}-rel
     )
 else()
     vcpkg_execute_build_process(
-        COMMAND ${BAZEL} build --config=cuda --config=noaws --config=nogcp --config=nonccl --verbose_failures -c opt --python_path=${PYTHON3} --noincompatible_disable_deprecated_attr_params --noincompatible_do_not_split_linking_cmdline --define=no_tensorflow_py_deps=true //tensorflow:libtensorflow_cc.so //tensorflow:install_headers
+        COMMAND ${BAZEL} build 
+            --verbose_failures 
+            --config=cuda
+            --config=tensorrt
+            --config=noaws
+            --config=nogcp 
+            --config=nonccl
+            --python_path=${PYTHON3}
+            -c opt
+            --copt=-march=native
+            --copt=-Wno-sign-compare
+            --host_copt=-march=native
+            --define=with_default_optimizations=true
+            --define=no_tensorflow_py_deps=true
+            //tensorflow:libtensorflow_cc.so //tensorflow:install_headers
         WORKING_DIRECTORY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel
         LOGNAME build-${TARGET_TRIPLET}-rel
     )
