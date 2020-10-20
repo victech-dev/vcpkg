@@ -120,7 +120,7 @@ if(CMAKE_HOST_WIN32)
     vcpkg_execute_build_process(
         COMMAND ${BASH} --noprofile --norc -c "${BAZEL} build \
             --verbose_failures \
-            -c opt --config=opt --define=no_tensorflow_py_deps=true --copt=-DTHRUST_IGNORE_CUB_VERSION_CHECK --define=override_eigen_strong_inline=true \
+            -c opt --config=opt --define=no_tensorflow_py_deps=true --define=override_eigen_strong_inline=true --copt=-nvcc_options=disable-warnings --copt=-DTHRUST_IGNORE_CUB_VERSION_CHECK \
             ///tensorflow:libtensorflow_cc.so ///tensorflow:install_headers"
         WORKING_DIRECTORY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel
         LOGNAME build-${TARGET_TRIPLET}-rel
