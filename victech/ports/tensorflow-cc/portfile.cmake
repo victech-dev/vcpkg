@@ -121,16 +121,8 @@ if(CMAKE_HOST_WIN32)
     vcpkg_execute_build_process(
         COMMAND ${BASH} --noprofile --norc -c "${BAZEL} build \
             --verbose_failures \
-            --config=cuda \
-            --config=noaws \
-            --config=nogcp \
-            --config=nonccl \
-             --python_path=${PYTHON3} \
+            --config=noaws --config=nogcp --config=nonccl \
              -c opt \
-             --copt=/arch:AVX \
-             --copt=-DTHRUST_IGNORE_CUB_VERSION_CHECK \
-             --copt=-nvcc_options=disable-warnings \
-             --define=with_default_optimizations=true \
              --define=override_eigen_strong_inline=true \
              --define=no_tensorflow_py_deps=true \
              ///tensorflow:libtensorflow_cc.so ///tensorflow:install_headers"
@@ -141,17 +133,8 @@ else()
     vcpkg_execute_build_process(
         COMMAND ${BAZEL} build 
             --verbose_failures 
-            --config=cuda
-            --config=tensorrt
-            --config=noaws
-            --config=nogcp 
-            --config=nonccl
-            --python_path=${PYTHON3}
+            --config=noaws --config=nogcp --config=nonccl
             -c opt
-            --copt=-march=native
-            --copt=-Wno-sign-compare
-            --host_copt=-march=native
-            --define=with_default_optimizations=true
             --define=no_tensorflow_py_deps=true
             //tensorflow:libtensorflow_cc.so //tensorflow:install_headers
         WORKING_DIRECTORY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel
