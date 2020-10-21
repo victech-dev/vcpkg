@@ -30,20 +30,28 @@ if(NOT TensorRT_INCLUDE_DIR)
     PATH_SUFFIXES cuda/include include)
 endif()
 
-find_library(TensorRT_LIBRARY nvinfer
-  HINTS ${CUDA_HOME} ${CUDA_TOOLKIT_ROOT_DIR}
-  PATH_SUFFIXES lib lib64 cuda/lib cuda/lib64 lib/x64)
-find_library(TensorRT_PLUGIN_LIBRARY nvinfer_plugin
-  HINTS ${CUDA_HOME} ${CUDA_TOOLKIT_ROOT_DIR}
-  PATH_SUFFIXES lib lib64 cuda/lib cuda/lib64 lib/x64)
-if(WIN32)
-  find_library(TensorRT_MYELIN_LIBRARY myelin64_1
+if(NOT TensorRT_LIBRARY)
+  find_library(TensorRT_LIBRARY nvinfer
     HINTS ${CUDA_HOME} ${CUDA_TOOLKIT_ROOT_DIR}
     PATH_SUFFIXES lib lib64 cuda/lib cuda/lib64 lib/x64)
-else()
-  find_library(TensorRT_MYELIN_LIBRARY myelin
+endif()
+
+if (NOT TensorRT_PLUGIN_LIBRARY)
+  find_library(TensorRT_PLUGIN_LIBRARY nvinfer_plugin
     HINTS ${CUDA_HOME} ${CUDA_TOOLKIT_ROOT_DIR}
     PATH_SUFFIXES lib lib64 cuda/lib cuda/lib64 lib/x64)
+endif()
+
+if (NOT TensorRT_MYELIN_LIBRARY)
+  if(WIN32)
+    find_library(TensorRT_MYELIN_LIBRARY myelin64_1
+      HINTS ${CUDA_HOME} ${CUDA_TOOLKIT_ROOT_DIR}
+      PATH_SUFFIXES lib lib64 cuda/lib cuda/lib64 lib/x64)
+  else()
+    find_library(TensorRT_MYELIN_LIBRARY myelin
+      HINTS ${CUDA_HOME} ${CUDA_TOOLKIT_ROOT_DIR}
+      PATH_SUFFIXES lib lib64 cuda/lib cuda/lib64 lib/x64)
+  endif()
 endif()
 
 if(EXISTS "${TensorRT_INCLUDE_DIR}/NvInferVersion.h")
