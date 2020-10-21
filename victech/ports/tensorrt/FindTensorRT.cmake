@@ -75,7 +75,7 @@ if(EXISTS "${TensorRT_INCLUDE_DIR}/NvInferVersion.h")
 endif()
 
 set(TensorRT_INCLUDE_DIRS ${TensorRT_INCLUDE_DIR})
-set(TensorRT_LIBRARIES ${TensorRT_LIBRARY} ${TensorRT_PLUGIN_LIBRARY})
+set(TensorRT_LIBRARIES ${TensorRT_LIBRARY} ${TensorRT_PLUGIN_LIBRARY} ${TensorRT_MYELIN_LIBRARY})
 mark_as_advanced(TensorRT_LIBRARY TensorRT_PLUGIN_LIBRARY TensorRT_MYELIN_LIBRARY TensorRT_INCLUDE_DIR)
 
 find_package_handle_standard_args(TensorRT
