@@ -29,16 +29,13 @@ if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x64")
     set(TENSORRT_OS "linux")
   endif()
 else()
-  # arm64 xavier 
-  # files are gathered from jetpack 4.3
-
   set(TENSORRT_FULL_VERSION "${TENSORRT_VERSION}-cuda10.2") # for cuda of jetpack 4.4
 
   if(VCPKG_TARGET_IS_WINDOWS)
     message(FATAL_ERROR "This port is only for Linux")
   elseif(VCPKG_TARGET_IS_LINUX)
     set(TENSORRT_DOWNLOAD_LINK "http://race.victech.io:8082/download/vcpkg_tensorrt/tensorrt/arm64/tensorrt-${TENSORRT_FULL_VERSION}.arm64.tar.gz")
-    set(SHA512_TENSORRT "4048b77754351d96092f76679472e1bd7f2dbbe7fa9caf58e1a99e51c7150f5a248eb52a519d4cb7e4bebf19396f760149a14d7ffd69f34b2741ddfbc43d2282")
+    set(SHA512_TENSORRT "7616dd6ecb915755a03de989527db518f34efa8bfc6a83fbda716114fa0f89b6012196c1c51883a806aec126e5f0896fc2b7f8ba2d0ad874a7a488060999dd8f")
     set(TENSORRT_OS "linux")
   endif()
 endif()
@@ -71,8 +68,8 @@ if(VCPKG_TARGET_IS_WINDOWS)
   file(INSTALL ${INCLUDE_FILES} DESTINATION ${CURRENT_PACKAGES_DIR}/include)
   file(INSTALL "${SOURCE_PATH}/copyright" DESTINATION ${CURRENT_PACKAGES_DIR}/share/${PORT} RENAME copyright)
 elseif(VCPKG_TARGET_IS_LINUX)
-  file(GLOB LIB_FILES "${SOURCE_PATH}/lib/*.a")
-  file(GLOB INCLUDE_FILES "${SOURCE_PATH}/include/*.h")
+  file(GLOB LIB_FILES "${SOURCE_PATH}/lib/*")
+  file(GLOB INCLUDE_FILES "${SOURCE_PATH}/include/*")
   file(INSTALL ${LIB_FILES} DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
   file(INSTALL ${LIB_FILES} DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
   file(INSTALL ${INCLUDE_FILES} DESTINATION ${CURRENT_PACKAGES_DIR}/include)
