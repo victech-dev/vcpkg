@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 8c8619d..7d857cb 100644
+index 8c8619d..542fd00 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -1,6 +1,7 @@
@@ -12,7 +12,7 @@ index 8c8619d..7d857cb 100644
  set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fPIC -Wno-deprecated-declarations -Wno-unused-variable")
  include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/tkDNN)
-@@ -15,115 +16,169 @@ add_definitions(-DTKDNN_PATH="${CMAKE_CURRENT_SOURCE_DIR}")
+@@ -15,115 +16,164 @@ add_definitions(-DTKDNN_PATH="${CMAKE_CURRENT_SOURCE_DIR}")
  #-------------------------------------------------------------------------------
  # CUDA
  #-------------------------------------------------------------------------------
@@ -120,20 +120,16 @@ index 8c8619d..7d857cb 100644
 -
 -add_executable(test_dla34_cnet tests/centernet/dla34_cnet/dla34_cnet.cpp)
 -target_link_libraries(test_dla34_cnet tkDNN)
+-
+-# DEMOS
+-add_executable(test_rtinference tests/test_rtinference/rtinference.cpp)
+-target_link_libraries(test_rtinference tkDNN)
 +if(VCPKG_LIBRARY_LINKAGE STREQUAL dynamic)
 +    add_library(tkDNN SHARED ${tkdnn_SRC} ${tkdnn_CUSRC})
 +else()
 +    add_library(tkDNN STATIC ${tkdnn_SRC} ${tkdnn_CUSRC})
 +endif()
 +target_link_libraries(tkDNN PUBLIC ${tkdnn_LIBS})
- 
--# DEMOS
--add_executable(test_rtinference tests/test_rtinference/rtinference.cpp)
--target_link_libraries(test_rtinference tkDNN)
-+if (VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
-+    # additional dependencies of libnvinfer in Jetson Xavier (Jetpack 4.3)
-+    target_link_libraries(tkDNN PUBLIC nvdla_compiler nvmedia EGL)
-+endif()
  
 -add_executable(map_demo demo/demo/map.cpp)
 -target_link_libraries(map_demo tkDNN)
