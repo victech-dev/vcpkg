@@ -156,7 +156,7 @@ if( TensorRT_FOUND AND NOT TARGET TensorRT::TensorRT )
   
     add_library( TensorRT::TensorRT_ONNXPARSER UNKNOWN IMPORTED )
     set_target_properties( TensorRT::TensorRT_ONNXPARSER PROPERTIES
-      IMPORTED_IMPLIB                   "${TensorRT_ONNXPARSER_LIBRARY}"
+      IMPORTED_LOCATION                 "${TensorRT_ONNXPARSER_LIBRARY}"
       INTERFACE_INCLUDE_DIRECTORIES     "${TensorRT_INCLUDE_DIR}"
       IMPORTED_LINK_INTERFACE_LANGUAGES "CXX" )    
   endif()
