@@ -1,0 +1,13 @@
+diff --git a/third_party/gpus/cuda_configure.bzl b/third_party/gpus/cuda_configure.bzl
+index a192c022..298aa7a6 100644
+--- a/third_party/gpus/cuda_configure.bzl
++++ b/third_party/gpus/cuda_configure.bzl
+@@ -1082,7 +1082,7 @@ def _create_local_cuda_repository(repository_ctx):
+ 
+     # Select the headers based on the cuDNN version (strip '64_' for Windows).
+     cudnn_headers = ["cudnn.h"]
+-    if cuda_config.cudnn_version.rsplit("_", 1)[0] >= "8":
++    if cuda_config.cudnn_version.rsplit("_", 1)[-1] >= "8":
+         cudnn_headers += [
+             "cudnn_backend.h",
+             "cudnn_adv_infer.h",

@@ -18,6 +18,7 @@ vcpkg_from_github(
         add_io_bazel_rules_docker.patch
         add_custom_export_symbols.patch
         fix-windows-tensorrt.patch
+        fix-cuda-configure.patch
 )
 
 vcpkg_find_acquire_program(BAZEL3_2_0)
