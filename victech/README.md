@@ -19,7 +19,12 @@ protobuf는 tensorflow 내부 버전과 맞추기 위해 특정 버전을 사용
 for arm64-linux
 
 ```
-./vcpkg install opencv4[contrib,core,cuda,dnn,ffmpeg,jpeg,opengl,png,tiff,webp] boost protobuf libjpeg-turbo zlib realsense2 glog tensorflow-cc darknet[opencv-cuda,cudnn] tkdnn freetype harfbuzz --triplet arm64-linux --overlay-ports=./victech/ports
+./vcpkg install opencv4[contrib,core,cuda,dnn,ffmpeg,jpeg,opengl,png,tiff,webp] boost protobuf libjpeg-turbo zlib glog tensorflow-cc darknet[opencv-cuda,cudnn] tkdnn freetype harfbuzz --triplet arm64-linux --overlay-ports=./victech/ports
+
+./vcpkg install boost protobuf libjpeg-turbo zlib glog freetype harfbuzz --triplet arm64-linux --overlay-ports=./victech/ports
+
+./vcpkg install opencv4[contrib,core,cuda,dnn,ffmpeg,jpeg,opengl,png,tiff,webp] darknet[opencv-cuda,cudnn] tkdnn --triplet arm64-linux --overlay-ports=./victech/ports
+
 ```
 
 for x64-linux
