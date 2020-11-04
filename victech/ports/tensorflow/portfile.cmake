@@ -169,8 +169,8 @@ else()
     file(COPY ${OUT_DIRECTORY}/lib/libtensorflow_framework.so DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib FOLLOW_SYMLINK_CHAIN)
 endif()
 
-file(COPY ${SOURCE_PATH}/LICENSE DESTINATION ${CURRENT_PACKAGES_DIR}/share/tensorflow-c)
-file(RENAME ${CURRENT_PACKAGES_DIR}/share/tensorflow-c/LICENSE ${CURRENT_PACKAGES_DIR}/share/tensorflow-c/copyright)
+file(COPY ${SOURCE_PATH}/LICENSE DESTINATION ${CURRENT_PACKAGES_DIR}/share/tensorflow)
+file(RENAME ${CURRENT_PACKAGES_DIR}/share/tensorflow/LICENSE ${CURRENT_PACKAGES_DIR}/share/tensorflow/copyright)
 
-file(COPY ${CMAKE_CURRENT_LIST_DIR}/TensorflowCConfig.cmake DESTINATION ${CURRENT_PACKAGES_DIR}/share/unofficial-tensorflow-c)
-file(RENAME ${CURRENT_PACKAGES_DIR}/share/unofficial-tensorflow-c/TensorflowCConfig.cmake ${CURRENT_PACKAGES_DIR}/share/unofficial-tensorflow-c/unofficial-tensorflow-c-config.cmake)
+file(COPY ${CMAKE_CURRENT_LIST_DIR}/TensorflowConfig.cmake DESTINATION ${CURRENT_PACKAGES_DIR}/share/unofficial-tensorflow)
+file(RENAME ${CURRENT_PACKAGES_DIR}/share/unofficial-tensorflow/TensorflowConfig.cmake ${CURRENT_PACKAGES_DIR}/share/unofficial-tensorflow/unofficial-tensorflow-config.cmake)
