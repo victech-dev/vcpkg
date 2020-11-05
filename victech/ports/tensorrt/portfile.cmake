@@ -10,9 +10,12 @@ if (VCPKG_TARGET_IS_WINDOWS)
     HINTS ENV CUDA_PATH ENV CUDA_PATH_V11_1 ENV CUDA_PATH_V11_0 ENV CUDA_PATH_V10_2 ENV CUDA_PATH_V10_1
     PATH_SUFFIXES cuda/include include)
 elseif (VCPKG_TARGET_IS_LINUX)
-  find_path(TensorRT_INCLUDE_DIR NvInfer.h
-    HINTS /usr/local/include /usr/include 
-    PATH_SUFFIXES x86_64-linux-gnu aarch64-linux-gnu)
+  execute_process(
+    COMMAND "find" "/usr/include" "-name" "NvInfer.h"
+    COMMAND "head" "-n" "1"
+    OUTPUT_VARIABLE TensorRT_NvInfer_H
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+  get_filename_component(TensorRT_INCLUDE_DIR ${TensorRT_NvInfer_H} DIRECTORY)
 endif()
 
 if(EXISTS "${TensorRT_INCLUDE_DIR}/NvInferVersion.h")
