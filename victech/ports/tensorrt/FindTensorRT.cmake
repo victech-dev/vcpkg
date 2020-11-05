@@ -18,7 +18,7 @@
 #  ``TensorRT_LIBRARIES``
 #    The TensorRT libraries.
 #
-#  ``TensorRT::TensorRT``
+#  ``TensorRT::TensorRT`` ``TensorRT::TensorRT_PLUGIN`` ``TensorRT::TensorRT_ONNXPARSER``
 #    The TensorRT target
 #
 
@@ -26,37 +26,25 @@ include(FindPackageHandleStandardArgs)
 
 if(NOT TensorRT_INCLUDE_DIR)
   find_path(TensorRT_INCLUDE_DIR NvInfer.h
-    HINTS ${CUDA_HOME} ${CUDA_TOOLKIT_ROOT_DIR}
+    HINTS ${CUDA_HOME} ${CUDA_TOOLKIT_ROOT_DIR} ${CUDAToolkit_ROOT_DIR}
     PATH_SUFFIXES cuda/include include)
 endif()
 
 if(NOT TensorRT_LIBRARY)
   find_library(TensorRT_LIBRARY nvinfer
-    HINTS ${CUDA_HOME} ${CUDA_TOOLKIT_ROOT_DIR}
+    HINTS ${CUDA_HOME} ${CUDA_TOOLKIT_ROOT_DIR} ${CUDAToolkit_ROOT_DIR}
     PATH_SUFFIXES lib lib64 cuda/lib cuda/lib64 lib/x64)
 endif()
 
 if (NOT TensorRT_PLUGIN_LIBRARY)
   find_library(TensorRT_PLUGIN_LIBRARY nvinfer_plugin
-    HINTS ${CUDA_HOME} ${CUDA_TOOLKIT_ROOT_DIR}
+    HINTS ${CUDA_HOME} ${CUDA_TOOLKIT_ROOT_DIR} ${CUDAToolkit_ROOT_DIR}
     PATH_SUFFIXES lib lib64 cuda/lib cuda/lib64 lib/x64)
-endif()
-
-if (NOT TensorRT_MYELIN_LIBRARY)
-  if(WIN32)
-    find_library(TensorRT_MYELIN_LIBRARY myelin64_1
-      HINTS ${CUDA_HOME} ${CUDA_TOOLKIT_ROOT_DIR}
-      PATH_SUFFIXES lib lib64 cuda/lib cuda/lib64 lib/x64)
-  else()
-    find_library(TensorRT_MYELIN_LIBRARY myelin
-      HINTS ${CUDA_HOME} ${CUDA_TOOLKIT_ROOT_DIR}
-      PATH_SUFFIXES lib lib64 cuda/lib cuda/lib64 lib/x64)
-  endif()
 endif()
 
 if(NOT TensorRT_ONNXPARSER_LIBRARY)
   find_library(TensorRT_ONNXPARSER_LIBRARY nvonnxparser
-    HINTS ${CUDA_HOME} ${CUDA_TOOLKIT_ROOT_DIR}
+    HINTS ${CUDA_HOME} ${CUDA_TOOLKIT_ROOT_DIR} ${CUDAToolkit_ROOT_DIR}
     PATH_SUFFIXES lib lib64 cuda/lib cuda/lib64 lib/x64)
 endif()
 
@@ -89,11 +77,11 @@ if(EXISTS "${TensorRT_INCLUDE_DIR}/NvInferVersion.h")
 endif()
 
 set(TensorRT_INCLUDE_DIRS ${TensorRT_INCLUDE_DIR})
-set(TensorRT_LIBRARIES ${TensorRT_LIBRARY} ${TensorRT_PLUGIN_LIBRARY} ${TensorRT_MYELIN_LIBRARY} ${TensorRT_ONNXPARSER_LIBRARY})
-mark_as_advanced(TensorRT_LIBRARY TensorRT_PLUGIN_LIBRARY TensorRT_MYELIN_LIBRARY TensorRT_ONNXPARSER_LIBRARY TensorRT_INCLUDE_DIR)
+set(TensorRT_LIBRARIES ${TensorRT_LIBRARY} ${TensorRT_PLUGIN_LIBRARY} ${TensorRT_ONNXPARSER_LIBRARY})
+mark_as_advanced(TensorRT_LIBRARY TensorRT_PLUGIN_LIBRARY TensorRT_ONNXPARSER_LIBRARY TensorRT_INCLUDE_DIR)
 
 find_package_handle_standard_args(TensorRT
-      REQUIRED_VARS  TensorRT_INCLUDE_DIR TensorRT_LIBRARY TensorRT_PLUGIN_LIBRARY TensorRT_MYELIN_LIBRARY TensorRT_ONNXPARSER_LIBRARY
+      REQUIRED_VARS  TensorRT_INCLUDE_DIR TensorRT_LIBRARY TensorRT_PLUGIN_LIBRARY TensorRT_ONNXPARSER_LIBRARY
       VERSION_VAR    TensorRT_VERSION
 )
 
@@ -102,7 +90,6 @@ if(WIN32)
   list(TRANSFORM TensorRT_DLL_DIR APPEND "/../lib")
   find_file(TensorRT_LIBRARY_DLL NAMES nvinfer.dll PATHS ${TensorRT_DLL_DIR})
   find_file(TensorRT_PLUGIN_LIBRARY_DLL NAMES nvinfer_plugin.dll PATHS ${TensorRT_DLL_DIR})
-  find_file(TensorRT_MYELIN_LIBRARY_DLL NAMES myelin64_1.dll PATHS ${TensorRT_DLL_DIR})
   find_file(TensorRT_ONNXPARSER_LIBRARY_DLL NAMES nvonnxparser.dll PATHS ${TensorRT_DLL_DIR})
 endif()
 
@@ -119,13 +106,6 @@ if( TensorRT_FOUND AND NOT TARGET TensorRT::TensorRT )
     set_target_properties( TensorRT::TensorRT_PLUGIN PROPERTIES
       IMPORTED_LOCATION                 "${TensorRT_PLUGIN_LIBRARY_DLL}"
       IMPORTED_IMPLIB                   "${TensorRT_PLUGIN_LIBRARY}"
-      INTERFACE_INCLUDE_DIRECTORIES     "${TensorRT_INCLUDE_DIR}"
-      IMPORTED_LINK_INTERFACE_LANGUAGES "CXX" )
-
-    add_library( TensorRT::TensorRT_MYELIN SHARED IMPORTED )
-    set_target_properties( TensorRT::TensorRT_MYELIN PROPERTIES
-      IMPORTED_LOCATION                 "${TensorRT_MYELIN_LIBRARY_DLL}"
-      IMPORTED_IMPLIB                   "${TensorRT_MYELIN_LIBRARY}"
       INTERFACE_INCLUDE_DIRECTORIES     "${TensorRT_INCLUDE_DIR}"
       IMPORTED_LINK_INTERFACE_LANGUAGES "CXX" )
 
@@ -148,12 +128,6 @@ if( TensorRT_FOUND AND NOT TARGET TensorRT::TensorRT )
       INTERFACE_INCLUDE_DIRECTORIES     "${TensorRT_INCLUDE_DIR}"
       IMPORTED_LINK_INTERFACE_LANGUAGES "CXX" )
 
-    add_library( TensorRT::TensorRT_MYELIN UNKNOWN IMPORTED )
-    set_target_properties( TensorRT::TensorRT_MYELIN PROPERTIES
-      IMPORTED_LOCATION                 "${TensorRT_MYELIN_LIBRARY}"
-      INTERFACE_INCLUDE_DIRECTORIES     "${TensorRT_INCLUDE_DIR}"
-      IMPORTED_LINK_INTERFACE_LANGUAGES "CXX" )
-  
     add_library( TensorRT::TensorRT_ONNXPARSER UNKNOWN IMPORTED )
     set_target_properties( TensorRT::TensorRT_ONNXPARSER PROPERTIES
       IMPORTED_LOCATION                 "${TensorRT_ONNXPARSER_LIBRARY}"
