@@ -12,7 +12,7 @@ if (VCPKG_TARGET_IS_WINDOWS)
 elseif (VCPKG_TARGET_IS_LINUX)
   find_path(TensorRT_INCLUDE_DIR NvInfer.h
     HINTS /usr/local/include /usr/include 
-    PATH_SUFFIXES cuda/include include)
+    PATH_SUFFIXES x86_64-linux-gnu aarch64-linux-gnu)
 endif()
 
 if(EXISTS "${TensorRT_INCLUDE_DIR}/NvInferVersion.h")
