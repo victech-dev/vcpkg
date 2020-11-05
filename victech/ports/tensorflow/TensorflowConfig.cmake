@@ -1,4 +1,5 @@
 set(TensorFlow_INCLUDE_DIR "${CMAKE_CURRENT_LIST_DIR}/../../include")
+set(TensorFlow_INCLUDE_DIRS ${TensorFlow_INCLUDE_DIR})
 
 if(CMAKE_HOST_WIN32)
 	add_library( TensorFlow::TensorFlow_Framework SHARED IMPORTED )
