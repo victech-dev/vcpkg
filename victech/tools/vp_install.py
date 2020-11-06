@@ -67,18 +67,23 @@ print("-- run vcpkg install:", " ".join(install_cmds))
 subprocess.run(install_cmds)
 
 # export results
-export_cmds = ["./vcpkg", "export", *pkg_list, "--triplet", triplet, "--zip", f"--output=vcpkg_{triplet}"]
+export_cmds = ["./vcpkg", "export", *pkg_list, "--triplet", triplet, "--raw", f"--output=vcpkg_{triplet}"]
 print("-- run vcpkg export:", " ".join(export_cmds))
 subprocess.run(export_cmds)
+
+# create tar.gz
+export_cmds = ["tar", "-czf", f"vcpkg_{triplet}.tar.gz", f"./vcpkg_{triplet}"]
 
 # upload to dc-base
 upload_host = "dev@192.168.2.100"
 upload_path = "/workspace/webroot/port_8082/download/vicpilot/vcpkg"
 identity_file = get_identity_file()
-upload_cmds = ["scp", "-i", identity_file, f"vcpkg_{triplet}.zip", f"{upload_host}:{upload_path}"]
+upload_cmds = ["scp", "-i", identity_file, f"vcpkg_{triplet}.tar.gz", f"{upload_host}:{upload_path}"]
 print("-- uploading export file:", " ".join(upload_cmds))
 subprocess.run(upload_cmds)
 
 # erase output file
-os.remove(f"vcpkg_{triplet}.zip")
+os.remove(f"vcpkg_{triplet}.tar.gz")
+shutil.rmtree(f"vcpkg_{triplet}", ignore_errors=True)
+print("-- done")
 
