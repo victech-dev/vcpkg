@@ -10,9 +10,12 @@ if (VCPKG_TARGET_IS_WINDOWS)
     HINTS ENV CUDA_PATH ENV CUDA_PATH_V11_1 ENV CUDA_PATH_V11_0 ENV CUDA_PATH_V10_2 ENV CUDA_PATH_V10_1
     PATH_SUFFIXES cuda/include include)
 elseif (VCPKG_TARGET_IS_LINUX)
-  find_path(CUDNN_INCLUDE_DIR cudnn.h
-    HINTS "/usr/local/cuda-11.1" "/usr/local/cuda-11.0" "/usr/local/cuda-10.2" "/usr/local/cuda-10.1" "/usr/local/cuda"
-    PATH_SUFFIXES cuda/include include)
+  execute_process(
+    COMMAND "find" "/usr/include" "-name" "cudnn.h"
+    COMMAND "head" "-n" "1"
+    OUTPUT_VARIABLE CUDNN_CUDNN_H
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+  get_filename_component(CUDNN_INCLUDE_DIR ${CUDNN_CUDNN_H} DIRECTORY)
 endif()
 
 if(EXISTS "${CUDNN_INCLUDE_DIR}/cudnn.h")
