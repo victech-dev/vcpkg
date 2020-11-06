@@ -7,8 +7,8 @@ from pathlib import Path
 import argparse
 
 parser = argparse.ArgumentParser(description="vp_install parser")
-parser.add_argument('--onlyexport', dest='onlyexport', action='store_true')
-parser.set_defaults(onlyexport=False)
+parser.add_argument('--exportonly', dest='exportonly', action='store_true')
+parser.set_defaults(exportonly=False)
 parser.add_argument('--noremove', dest='noremove', action='store_true')
 parser.set_defaults(noremove=False)
 args = parser.parse_args()
