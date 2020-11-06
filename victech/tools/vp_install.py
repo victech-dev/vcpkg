@@ -72,7 +72,9 @@ print("-- run vcpkg export:", " ".join(export_cmds))
 subprocess.run(export_cmds)
 
 # create tar.gz
-export_cmds = ["tar", "-czf", f"vcpkg_{triplet}.tar.gz", f"./vcpkg_{triplet}"]
+tar_cmds = ["tar", "-czf", f"vcpkg_{triplet}.tar.gz", f"./vcpkg_{triplet}"]
+print("-- compressing to tar.gz:", " ".join(tar_cmds))
+subprocess.run(tar_cmds)
 
 # upload to dc-base
 upload_host = "dev@192.168.2.100"
