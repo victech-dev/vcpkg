@@ -59,7 +59,7 @@ pkg_list = [
 ]
 print("-- package list:", pkg_list)
 
-if not (args.exportonly or arg.noremove):
+if not (args.exportonly or args.noremove):
     # remove previous install/package/cache directories
     print("-- removing previous buildtrees")
     shutil.rmtree(str(cwd/'buildtrees'), ignore_errors=True)
