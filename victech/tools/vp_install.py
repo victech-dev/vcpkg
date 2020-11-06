@@ -4,6 +4,14 @@ import platform
 import shutil
 import subprocess
 from pathlib import Path
+import argparse
+
+parser = argparse.ArgumentParser(description="vp_install parser")
+parser.add_argument('--onlyexport', dest='onlyexport', action='store_true')
+parser.set_defaults(onlyexport=False)
+parser.add_argument('--noremove', dest='noremove', action='store_true')
+parser.set_defaults(noremove=False)
+args = parser.parse_args()
 
 def get_identity_file():
     ssh_path = Path.home() / '.ssh'
@@ -46,25 +54,29 @@ pkg_list = [
     "tkdnn",
     "freetype",
     "harfbuzz",
+    "minizip",
+    "curl"
 ]
 print("-- package list:", pkg_list)
 
-# remove previous install/package/cache directories
-print("-- removing previous buildtrees")
-shutil.rmtree(str(cwd/'buildtrees'), ignore_errors=True)
-print("-- removing previous installed")
-shutil.rmtree(str(cwd/'installed'), ignore_errors=True)
-print("-- removing previous packages")
-shutil.rmtree(str(cwd/'packages'), ignore_errors=True)
-print("-- removing previous downloads")
-shutil.rmtree(str(cwd/'downloads'), ignore_errors=True)
-print("-- removing previous cache")
-shutil.rmtree(str(cache_path), ignore_errors=True)
+if not (args.exportonly or arg.noremove):
+    # remove previous install/package/cache directories
+    print("-- removing previous buildtrees")
+    shutil.rmtree(str(cwd/'buildtrees'), ignore_errors=True)
+    print("-- removing previous installed")
+    shutil.rmtree(str(cwd/'installed'), ignore_errors=True)
+    print("-- removing previous packages")
+    shutil.rmtree(str(cwd/'packages'), ignore_errors=True)
+    print("-- removing previous downloads")
+    shutil.rmtree(str(cwd/'downloads'), ignore_errors=True)
+    print("-- removing previous cache")
+    shutil.rmtree(str(cache_path), ignore_errors=True)
 
-# run vcpkg install
-install_cmds = ["./vcpkg", "install", *pkg_list, "--triplet", triplet, "--overlay-ports=victech/ports"]
-print("-- run vcpkg install:", " ".join(install_cmds))
-subprocess.run(install_cmds)
+if not args.exportonly:
+    # run vcpkg install
+    install_cmds = ["./vcpkg", "install", *pkg_list, "--triplet", triplet, "--overlay-ports=victech/ports"]
+    print("-- run vcpkg install:", " ".join(install_cmds))
+    subprocess.run(install_cmds)
 
 # export results
 export_cmds = ["./vcpkg", "export", *pkg_list, "--triplet", triplet, "--raw", f"--output=vcpkg_{triplet}"]
