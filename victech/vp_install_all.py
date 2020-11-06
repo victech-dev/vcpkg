@@ -34,21 +34,18 @@ assert triplet is not None
 print("-- triplet:", triplet)
 
 # define package list
-# pkg_list = [
-#     "opencv4[contrib,core,cuda,dnn,ffmpeg,jpeg,opengl,png,tiff,webp]",
-#     "boost",
-#     "protobuf",
-#     "libjpeg-turbo",
-#     "zlib",
-#     "glog",
-#     "tensorflow",
-#     "darknet[opencv-cuda,cudnn]",
-#     "tkdnn",
-#     "freetype",
-#     "harfbuzz",
-# ]
 pkg_list = [
-    "zlib"
+    "opencv4[contrib,core,cuda,dnn,ffmpeg,jpeg,opengl,png,tiff,webp]",
+    "boost",
+    "protobuf",
+    "libjpeg-turbo",
+    "zlib",
+    "glog",
+    "tensorflow",
+    "darknet[opencv-cuda,cudnn]",
+    "tkdnn",
+    "freetype",
+    "harfbuzz",
 ]
 print("-- package list:", pkg_list)
 
@@ -74,7 +71,7 @@ export_cmds = ["./vcpkg", "export", *pkg_list, "--triplet", triplet, "--zip", f"
 print("-- run vcpkg export:", " ".join(export_cmds))
 subprocess.run(export_cmds)
 
-# upload dc-base
+# upload to dc-base
 upload_host = "dev@192.168.2.100"
 upload_path = "/workspace/webroot/port_8082/download/vicpilot/vcpkg"
 identity_file = get_identity_file()
