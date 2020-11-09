@@ -129,6 +129,7 @@ if("contrib" IN_LIST FEATURES)
     HEAD_REF master
     PATCHES
       0005-add-missing-stdexcept-include.patch
+      0006-fix-freetype-cmake.patch
   )
   set(BUILD_WITH_CONTRIB_FLAG "-DOPENCV_EXTRA_MODULES_PATH=${CONTRIB_SOURCE_PATH}/modules")
 
@@ -439,8 +440,3 @@ if(VCPKG_TARGET_IS_ANDROID)
 endif()
 
 file(INSTALL ${SOURCE_PATH}/LICENSE DESTINATION ${CURRENT_PACKAGES_DIR}/share/${PORT} RENAME copyright)
-
-# Add implicit dependency for libfreetype
-file(READ ${CURRENT_PACKAGES_DIR}/share/opencv/OpenCVModules.cmake CONFIG_MODULE)
-string(REPLACE "\${_IMPORT_PREFIX}/lib/libfreetype.a" "\${_IMPORT_PREFIX}/lib/libfreetype.a;\${_IMPORT_PREFIX}/lib/libbrotlidec-static.a;\${_IMPORT_PREFIX}/lib/libbrotlicommon-static.a;\${_IMPORT_PREFIX}/lib/libbz2.a" CONFIG_MODULE "${CONFIG_MODULE}")
-file(WRITE ${CURRENT_PACKAGES_DIR}/share/opencv/OpenCVModules.cmake "${CONFIG_MODULE}")
