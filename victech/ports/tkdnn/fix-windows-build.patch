@@ -1,6 +1,6 @@
-From 22633760349ddbdf8f9b92e92370d6a875f80be8 Mon Sep 17 00:00:00 2001
+From ae00c6988ea100ef754440b17df80243325057a8 Mon Sep 17 00:00:00 2001
 From: sehee <sehee>
-Date: Mon, 9 Nov 2020 17:49:33 +0900
+Date: Mon, 9 Nov 2020 19:27:32 +0900
 Subject: [PATCH] fix windows build
 
 ---
@@ -19,8 +19,8 @@ Subject: [PATCH] fix windows build
  include/tkDNN/utils.h              | 51 ++++++++++++++++++++----------
  src/LSTM.cpp                       |  9 ++++--
  src/Yolo3Detection.cpp             |  4 +++
- src/utils.cpp                      |  6 ++++
- 16 files changed, 133 insertions(+), 60 deletions(-)
+ src/utils.cpp                      | 12 +++++++
+ 16 files changed, 139 insertions(+), 60 deletions(-)
  create mode 100644 include/tkDNN/dll.h
 
 diff --git a/include/tkDNN/CenternetDetection.h b/include/tkDNN/CenternetDetection.h
@@ -656,10 +656,22 @@ index e9b0064..3804ea7 100644
          rt_out[i] = (dnnType*)netRT->buffersRT[i+1] + netRT->buffersDIM[i+1].tot()*bi;
  
 diff --git a/src/utils.cpp b/src/utils.cpp
-index 65030f0..2688ca6 100644
+index 65030f0..bd15515 100644
 --- a/src/utils.cpp
 +++ b/src/utils.cpp
-@@ -192,7 +192,13 @@ void getMemUsage(double& vm_usage_kb, double& resident_set_kb){
+@@ -1,5 +1,11 @@
+ #include "utils.h"
+ #include <string.h>
++#ifdef _WIN32
++#ifndef NOMINMAX
++#define NOMINMAX 1
++#endif
++#include <windows.h>
++#endif
+ 
+ void printCenteredTitle(const char *title, char fill, int dim) {
+ 
+@@ -192,7 +198,13 @@ void getMemUsage(double& vm_usage_kb, double& resident_set_kb){
  
     stat_stream.close();
  
