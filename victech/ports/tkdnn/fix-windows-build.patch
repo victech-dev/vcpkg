@@ -1,155 +1,50 @@
-From 99e0a98032ec057077a6b48ba5d1d8777fceae96 Mon Sep 17 00:00:00 2001
+From 22633760349ddbdf8f9b92e92370d6a875f80be8 Mon Sep 17 00:00:00 2001
 From: sehee <sehee>
-Date: Mon, 9 Nov 2020 11:12:16 +0900
-Subject: [PATCH] fix-windows-build
+Date: Mon, 9 Nov 2020 17:49:33 +0900
+Subject: [PATCH] fix windows build
 
 ---
- CMakeLists.txt                  | 71 ++++++++++++++++-----------------
- include/tkDNN/DarknetParser.h   | 19 ++++-----
- include/tkDNN/DetectionNN.h     |  4 ++
- include/tkDNN/ImuOdom.h         |  4 ++
- include/tkDNN/Int8BatchStream.h |  4 ++
- include/tkDNN/Layer.h           | 43 ++++++++++----------
- include/tkDNN/Network.h         |  3 +-
- include/tkDNN/NetworkRT.h       |  3 +-
- include/tkDNN/Yolo3Detection.h  |  3 +-
- include/tkDNN/dll.h             | 20 ++++++++++
- include/tkDNN/test.h            |  5 +++
- include/tkDNN/utils.h           | 52 ++++++++++++++++--------
- src/LSTM.cpp                    |  9 ++++-
- src/Yolo3Detection.cpp          |  4 ++
- src/utils.cpp                   |  6 +++
- 15 files changed, 162 insertions(+), 88 deletions(-)
+ include/tkDNN/CenternetDetection.h |  3 +-
+ include/tkDNN/DarknetParser.h      | 19 +++++------
+ include/tkDNN/DetectionNN.h        |  5 ++-
+ include/tkDNN/ImuOdom.h            |  5 ++-
+ include/tkDNN/Int8BatchStream.h    |  5 ++-
+ include/tkDNN/Layer.h              | 45 +++++++++++++-------------
+ include/tkDNN/MobilenetDetection.h |  5 +--
+ include/tkDNN/Network.h            |  5 +--
+ include/tkDNN/NetworkRT.h          |  3 +-
+ include/tkDNN/Yolo3Detection.h     |  3 +-
+ include/tkDNN/dll.h                | 20 ++++++++++++
+ include/tkDNN/test.h               |  5 +++
+ include/tkDNN/utils.h              | 51 ++++++++++++++++++++----------
+ src/LSTM.cpp                       |  9 ++++--
+ src/Yolo3Detection.cpp             |  4 +++
+ src/utils.cpp                      |  6 ++++
+ 16 files changed, 133 insertions(+), 60 deletions(-)
  create mode 100644 include/tkDNN/dll.h
 
-diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 0763a12..13e8690 100644
---- a/CMakeLists.txt
-+++ b/CMakeLists.txt
-@@ -2,9 +2,24 @@ cmake_minimum_required(VERSION 3.17)
+diff --git a/include/tkDNN/CenternetDetection.h b/include/tkDNN/CenternetDetection.h
+index 1e58970..665a814 100644
+--- a/include/tkDNN/CenternetDetection.h
++++ b/include/tkDNN/CenternetDetection.h
+@@ -10,13 +10,14 @@
+ #include <algorithm>    // std::sort
  
- project (tkDNN LANGUAGES CUDA CXX)
+ #include "DetectionNN.h"
++#include "dll.h"
  
--set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
--set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fPIC -Wno-deprecated-declarations -Wno-unused-variable")
--include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/tkDNN)
-+# CXX language
-+set(CMAKE_CXX_STANDARD 11)
-+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-+if (NOT MSVC)
-+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations -Wno-unused-variable")
-+endif()
-+
-+# CUDA language
-+set(CMAKE_CUDA_FLAGS ${CMAKE_CUDA_FLAGS} --maxrregcount=32)
-+if(BUILD_SHARED_LIBS)
-+    set(CMAKE_CUDA_RUNTIME_LIBRARY "Shared")
-+else()
-+    set(CMAKE_CUDA_RUNTIME_LIBRARY "Static")
-+endif()
-+
-+include_directories(
-+    ${CMAKE_CURRENT_SOURCE_DIR}/include 
-+    ${CMAKE_CURRENT_SOURCE_DIR}/include/tkDNN )
+ #include "kernelsThrust.h"
  
- # project specific flags
- if(DEBUG)
-@@ -12,40 +27,28 @@ if(DEBUG)
- endif()
  
- add_definitions(-DTKDNN_PATH="${CMAKE_CURRENT_SOURCE_DIR}")
-+if(MSVC AND BUILD_SHARED_LIBS)
-+	add_definitions(-D${PROJECT_NAME}_DLL)	# use or build Windows DLL
-+endif()
+ namespace tk { namespace dnn { 
  
- #-------------------------------------------------------------------------------
--# CUDA
-+# External Libraries
- #-------------------------------------------------------------------------------
--
--find_package(CUDA 9.0 REQUIRED)
--SET(CUDA_SEPARABLE_COMPILATION ON)
--#set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -arch=sm_30 --compiler-options '-fPIC'")
--set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} --maxrregcount=32)
--if(VCPKG_LIBRARY_LINKAGE STREQUAL dynamic)
--    set(CMAKE_CUDA_RUNTIME_LIBRARY "Shared")
--else()
--    set(CMAKE_CUDA_RUNTIME_LIBRARY "Static")
--endif()
-+find_package(CUDAToolkit 9.0 REQUIRED)
- 
- find_package(CUDNN REQUIRED)
--include_directories(${CUDNN_INCLUDE_DIR})
-+include_directories(${CUDNN_INCLUDE_DIRS})
- 
--#-------------------------------------------------------------------------------
--# External Libraries
--#-------------------------------------------------------------------------------
-+find_package(TensorRT REQUIRED)
-+include_directories(${TensorRT_INCLUDE_DIRS})
- 
- find_package(Eigen3 REQUIRED)
- include_directories(${EIGEN3_INCLUDE_DIR})
- 
- find_package(OpenCV REQUIRED)
-+include_directories(${OPENCV_INCLUDE_DIRS})
- set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DOPENCV")
- 
--find_package(TensorRT REQUIRED)
--if (VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
--    # custom for jetson board
--    LINK_DIRECTORIES("/usr/lib/aarch64-linux-gnu/tegra/")
--endif()
--
- find_package(yaml-cpp REQUIRED)
- 
- #-------------------------------------------------------------------------------
-@@ -53,16 +56,10 @@ find_package(yaml-cpp REQUIRED)
- #-------------------------------------------------------------------------------
- file(GLOB tkdnn_SRC "src/*.cpp")
- file(GLOB tkdnn_CUSRC "src/kernels/*.cu" "src/sorting.cu")
--set(tkdnn_LIBS cublas cuda CuDNN::CuDNN ${OpenCV_LIBS} TensorRT::TensorRT yaml-cpp)
-+set(tkdnn_LIBS cuda cublas CuDNN::CuDNN ${OpenCV_LIBS} TensorRT::TensorRT yaml-cpp)
- 
--set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
--include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include ${CUDA_INCLUDE_DIRS} ${OPENCV_INCLUDE_DIRS} ${TensorRT_INCLUDE_DIRS})
--
--if(VCPKG_LIBRARY_LINKAGE STREQUAL dynamic)
--    add_library(tkDNN SHARED ${tkdnn_SRC} ${tkdnn_CUSRC})
--else()
--    add_library(tkDNN STATIC ${tkdnn_SRC} ${tkdnn_CUSRC})
--endif()
-+add_library(tkDNN ${tkdnn_SRC} ${tkdnn_CUSRC})
-+set_target_properties(tkDNN PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
- target_link_libraries(tkDNN PUBLIC ${tkdnn_LIBS})
- 
- if(DEBUG)
-@@ -70,10 +67,10 @@ if(DEBUG)
- else()
-     # VICTECH : only build yolo4 related
-     add_executable(test_yolo4 tests/darknet/yolo4.cpp)
--    target_link_libraries(test_yolo4 PUBLIC tkDNN)
-+    target_link_libraries(test_yolo4 PRIVATE CUDA::cudart tkDNN)
-     install(TARGETS test_yolo4 DESTINATION tools/tkdnn)
-     add_executable(test_yolo4tiny tests/darknet/yolo4tiny.cpp)
--    target_link_libraries(test_yolo4tiny PUBLIC tkDNN)
-+    target_link_libraries(test_yolo4tiny PRIVATE CUDA::cudart tkDNN)
-     install(TARGETS test_yolo4tiny DESTINATION tools/tkdnn)
- endif()
- 
-@@ -160,7 +157,9 @@ install(
-     #TARGETS tkDNN kernels 
-     TARGETS tkDNN
-     EXPORT tkDNNTargets 
--    DESTINATION lib)
-+    RUNTIME DESTINATION bin
-+    LIBRARY DESTINATION lib
-+    ARCHIVE DESTINATION lib)
- install(
-     EXPORT tkDNNTargets 
-     NAMESPACE tkDNN:: 
+-class CenternetDetection : public DetectionNN
++class tkDNN_API CenternetDetection : public DetectionNN
+ {
+ private:
+     tk::dnn::dataDim_t dim;
 diff --git a/include/tkDNN/DarknetParser.h b/include/tkDNN/DarknetParser.h
-index 0093250..3f7af76 100644
+index 748eb3e..1407d4f 100644
 --- a/include/tkDNN/DarknetParser.h
 +++ b/include/tkDNN/DarknetParser.h
 @@ -1,10 +1,11 @@
@@ -190,55 +85,95 @@ index 0093250..3f7af76 100644
  
  }}
 diff --git a/include/tkDNN/DetectionNN.h b/include/tkDNN/DetectionNN.h
-index ba42834..8e3c57a 100644
+index ba42834..b674fb2 100644
 --- a/include/tkDNN/DetectionNN.h
 +++ b/include/tkDNN/DetectionNN.h
-@@ -4,7 +4,11 @@
+@@ -4,7 +4,9 @@
  #include <iostream>
  #include <signal.h>
  #include <stdlib.h>    
-+#ifdef _WIN32
-+#include <windows.h>
-+#else
++#ifndef _WIN32
  #include <unistd.h>
 +#endif
  #include <mutex>
  #include "utils.h"
  
+@@ -13,6 +15,7 @@
+ #include <opencv2/imgproc/imgproc.hpp>
+ 
+ #include "tkdnn.h"
++#include "dll.h"
+ 
+ // #define OPENCV_CUDACONTRIB //if OPENCV has been compiled with CUDA and contrib.
+ 
+@@ -24,7 +27,7 @@
+ 
+ namespace tk { namespace dnn {
+ 
+-class DetectionNN {
++class tkDNN_API DetectionNN {
+ 
+     protected:
+         tk::dnn::NetworkRT *netRT = nullptr;
 diff --git a/include/tkDNN/ImuOdom.h b/include/tkDNN/ImuOdom.h
-index 58def96..41921ca 100644
+index 58def96..28e78b2 100644
 --- a/include/tkDNN/ImuOdom.h
 +++ b/include/tkDNN/ImuOdom.h
-@@ -1,7 +1,11 @@
+@@ -1,11 +1,14 @@
  #include <iostream>
  #include <signal.h>
  #include <stdlib.h>     /* srand, rand */
-+#ifdef _WIN32
-+#include <windows.h>
-+#else
++#ifndef _WIN32
  #include <unistd.h>
 +#endif
  #include <mutex>
  #include <Eigen/Dense>
  #include "utils.h"
+ #include "tkdnn.h"
++#include "dll.h"
+ 
+ namespace tk { namespace dnn {
+ 
+@@ -13,7 +16,7 @@ namespace tk { namespace dnn {
+  * 
+  * @author Francesco Gatti
+  */
+-class ImuOdom {
++class tkDNN_API ImuOdom {
+         
+     public:
+         tk::dnn::Network *net = nullptr;
 diff --git a/include/tkDNN/Int8BatchStream.h b/include/tkDNN/Int8BatchStream.h
-index 86ac623..17ad69e 100644
+index 4e7b709..b41e716 100644
 --- a/include/tkDNN/Int8BatchStream.h
 +++ b/include/tkDNN/Int8BatchStream.h
-@@ -12,7 +12,11 @@
+@@ -12,12 +12,15 @@
  #include <iomanip>
  #include <signal.h>
  #include <stdlib.h>    
-+#ifdef _WIN32
-+#include <windows.h>
-+#else
++#ifndef _WIN32
  #include <unistd.h>
 +#endif
  #include <mutex>
  
  #include <NvInfer.h>
+ #include "utils.h"
+ #include "tkdnn.h"
++#include "dll.h"
+ 
+ /*
+  * BatchStream implements the stream for the INT8 calibrator. 
+@@ -25,7 +28,7 @@
+  * and the list of label file names. 
+  * It then iterates on images and labels.
+  */
+-class BatchStream {
++class tkDNN_API BatchStream {
+ public:
+ 	BatchStream(tk::dnn::dataDim_t dim, int batchSize, int maxBatches, const std::string& fileimglist, const std::string& filelabellist);
+ 	virtual ~BatchStream() { }
 diff --git a/include/tkDNN/Layer.h b/include/tkDNN/Layer.h
-index 896854b..5db3dea 100644
+index c57d4ee..7b26005 100644
 --- a/include/tkDNN/Layer.h
 +++ b/include/tkDNN/Layer.h
 @@ -5,6 +5,7 @@
@@ -267,6 +202,15 @@ index 896854b..5db3dea 100644
  
  public:
      LayerWgs(Network *net, int inputs, int outputs, int kh, int kw, int kt,
+@@ -173,7 +174,7 @@ public:
+ /**
+     Input layer (it doesnt need weigths)
+ */
+-class Input : public Layer {
++class tkDNN_API Input : public Layer {
+ 
+ public:
+ 
 @@ -195,7 +196,7 @@ public:
  /**
      Dense (full interconnection) layer
@@ -438,8 +382,37 @@ index 896854b..5db3dea 100644
  
  public:
      Region(Network *net, int classes, int coords, int num);
+diff --git a/include/tkDNN/MobilenetDetection.h b/include/tkDNN/MobilenetDetection.h
+index 09d8fa9..477529a 100644
+--- a/include/tkDNN/MobilenetDetection.h
++++ b/include/tkDNN/MobilenetDetection.h
+@@ -5,13 +5,14 @@
+ #include <opencv2/opencv.hpp>
+ 
+ #include "DetectionNN.h"
++#include "dll.h"
+ 
+ #define N_COORDS 4
+ #define N_SSDSPEC 6
+ 
+ namespace tk { namespace dnn { 
+ 
+-struct SSDSpec
++struct tkDNN_API SSDSpec
+ {
+     int featureSize = 0;
+     int shrinkage = 0;
+@@ -41,7 +42,7 @@ struct SSDSpec
+     }
+ };
+ 
+-class MobilenetDetection : public DetectionNN
++class tkDNN_API MobilenetDetection : public DetectionNN
+ {
+ private:
+     float IoUThreshold = 0.45;
 diff --git a/include/tkDNN/Network.h b/include/tkDNN/Network.h
-index 2d95215..06449a7 100644
+index 2d95215..ea6b9ec 100644
 --- a/include/tkDNN/Network.h
 +++ b/include/tkDNN/Network.h
 @@ -3,6 +3,7 @@
@@ -449,6 +422,15 @@ index 2d95215..06449a7 100644
 +#include "dll.h"
  
  namespace tk { namespace dnn {
+ 
+@@ -14,7 +15,7 @@ namespace tk { namespace dnn {
+     w = width  (rows)
+     l = lenght (3rd dimension)
+ */
+-struct dataDim_t {
++struct tkDNN_API dataDim_t {
+ 
+     int n, c, h, w, l;
  
 @@ -35,7 +36,7 @@ struct dataDim_t {
  class Layer;
@@ -460,7 +442,7 @@ index 2d95215..06449a7 100644
  public:
      Network(dataDim_t input_dim);
 diff --git a/include/tkDNN/NetworkRT.h b/include/tkDNN/NetworkRT.h
-index aceca56..857e2e9 100644
+index 7789e38..54ba177 100644
 --- a/include/tkDNN/NetworkRT.h
 +++ b/include/tkDNN/NetworkRT.h
 @@ -6,6 +6,7 @@
@@ -481,7 +463,7 @@ index aceca56..857e2e9 100644
  public:
      nvinfer1::DataType dtRT;
 diff --git a/include/tkDNN/Yolo3Detection.h b/include/tkDNN/Yolo3Detection.h
-index 8593341..e86b30d 100644
+index 3c36ca8..09a6e34 100644
 --- a/include/tkDNN/Yolo3Detection.h
 +++ b/include/tkDNN/Yolo3Detection.h
 @@ -4,10 +4,11 @@
@@ -524,7 +506,7 @@ index 0000000..1254b2b
 +
 +#endif /*TKDNN_DLL_H*/
 diff --git a/include/tkDNN/test.h b/include/tkDNN/test.h
-index 73a156c..b3d6db7 100644
+index aaad12c..b5193ae 100644
 --- a/include/tkDNN/test.h
 +++ b/include/tkDNN/test.h
 @@ -29,7 +29,12 @@ int testInference(std::vector<std::string> input_bins, std::vector<std::string>
@@ -541,15 +523,14 @@ index 73a156c..b3d6db7 100644
      tk::dnn::dataDim_t dim1 =  net->input_dim; //input dim
      printCenteredTitle(" CUDNN inference ", '=', 30); {
 diff --git a/include/tkDNN/utils.h b/include/tkDNN/utils.h
-index efbc8e2..a921afb 100644
+index 74d4bb6..4356e25 100644
 --- a/include/tkDNN/utils.h
 +++ b/include/tkDNN/utils.h
-@@ -12,8 +12,14 @@
+@@ -12,8 +12,13 @@
  #include <cublas_v2.h>
  #include <cudnn.h>
  
 +#ifdef _WIN32
-+#include <windows.h>
 +#include <chrono>
 +#else
  #include <unistd.h>
@@ -559,7 +540,7 @@ index efbc8e2..a921afb 100644
  
  
  #define dnnType float
-@@ -38,16 +44,28 @@
+@@ -38,16 +43,28 @@
  
  #define TKDNN_VERBOSE 0
  
@@ -592,7 +573,7 @@ index efbc8e2..a921afb 100644
  
  /********************************************************
   * Prints the error message, and exits
-@@ -101,23 +119,23 @@ typedef enum {
+@@ -101,23 +118,23 @@ typedef enum {
    ERROR_CUDNNvsTENSORRT = 8    
  } resultError_t;
  

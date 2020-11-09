@@ -1,60 +1,91 @@
+From 7a2745aa335a7790c41871d51b7ecb869f0f2163 Mon Sep 17 00:00:00 2001
+From: sehee <sehee>
+Date: Mon, 9 Nov 2020 17:26:27 +0900
+Subject: [PATCH] renew_cmakelist_for_vcpkg
+
+---
+ CMakeLists.txt | 240 +++++++++++++++++++++++++++++--------------------
+ 1 file changed, 145 insertions(+), 95 deletions(-)
+
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 8c8619d..542fd00 100644
+index 8c8619d..b797e25 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -1,6 +1,7 @@
+@@ -1,9 +1,25 @@
 -cmake_minimum_required(VERSION 3.5)
 +cmake_minimum_required(VERSION 3.17)
-+
-+project (tkDNN LANGUAGES CUDA CXX)
  
 -project (tkDNN)
- set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
- set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fPIC -Wno-deprecated-declarations -Wno-unused-variable")
- include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/tkDNN)
-@@ -15,115 +16,164 @@ add_definitions(-DTKDNN_PATH="${CMAKE_CURRENT_SOURCE_DIR}")
- #-------------------------------------------------------------------------------
- # CUDA
- #-------------------------------------------------------------------------------
+-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fPIC -Wno-deprecated-declarations -Wno-unused-variable")
+-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/tkDNN)
++project (tkDNN LANGUAGES CUDA CXX)
 +
- find_package(CUDA 9.0 REQUIRED)
- SET(CUDA_SEPARABLE_COMPILATION ON)
- #set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -arch=sm_30 --compiler-options '-fPIC'")
- set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} --maxrregcount=32)
-+if(VCPKG_LIBRARY_LINKAGE STREQUAL dynamic)
++# CXX language
++set(CMAKE_CXX_STANDARD 11)
++set(CMAKE_POSITION_INDEPENDENT_CODE ON)
++if (NOT MSVC)
++    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations -Wno-unused-variable")
++endif()
++
++# CUDA language
++set(CMAKE_CUDA_FLAGS ${CMAKE_CUDA_FLAGS} --maxrregcount=32)
++if(BUILD_SHARED_LIBS)
 +    set(CMAKE_CUDA_RUNTIME_LIBRARY "Shared")
 +else()
 +    set(CMAKE_CUDA_RUNTIME_LIBRARY "Static")
 +endif()
++
++include_directories(
++    ${CMAKE_CURRENT_SOURCE_DIR}/include 
++    ${CMAKE_CURRENT_SOURCE_DIR}/include/tkDNN )
+ 
+ # project specific flags
+ if(DEBUG)
+@@ -11,119 +27,153 @@ if(DEBUG)
+ endif()
+ 
+ add_definitions(-DTKDNN_PATH="${CMAKE_CURRENT_SOURCE_DIR}")
++if(MSVC AND BUILD_SHARED_LIBS)
++	add_definitions(-D${PROJECT_NAME}_DLL)	# use or build Windows DLL
++endif()
+ 
+ #-------------------------------------------------------------------------------
+-# CUDA
++# External Libraries
+ #-------------------------------------------------------------------------------
+-find_package(CUDA 9.0 REQUIRED)
+-SET(CUDA_SEPARABLE_COMPILATION ON)
+-#set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -arch=sm_30 --compiler-options '-fPIC'")
+-set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} --maxrregcount=32)
++find_package(CUDAToolkit 9.0 REQUIRED)
++include_directories(${CUDAToolkit_INCLUDE_DIRS}) # required for jetson (why?)
  
  find_package(CUDNN REQUIRED)
- include_directories(${CUDNN_INCLUDE_DIR})
- 
+-include_directories(${CUDNN_INCLUDE_DIR})
+-
 -
 -# compile
 -file(GLOB tkdnn_CUSRC "src/kernels/*.cu" "src/sorting.cu")
 -cuda_include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include ${CUDA_INCLUDE_DIRS} ${CUDNN_INCLUDE_DIRS})
 -cuda_add_library(kernels SHARED ${tkdnn_CUSRC})
--
--
- #-------------------------------------------------------------------------------
- # External Libraries
- #-------------------------------------------------------------------------------
-+
++include_directories(${CUDNN_INCLUDE_DIRS})
+ 
++find_package(TensorRT REQUIRED)
++include_directories(${TensorRT_INCLUDE_DIRS})
+ 
+-#-------------------------------------------------------------------------------
+-# External Libraries
+-#-------------------------------------------------------------------------------
  find_package(Eigen3 REQUIRED)
  include_directories(${EIGEN3_INCLUDE_DIR})
  
  find_package(OpenCV REQUIRED)
++include_directories(${OPENCV_INCLUDE_DIRS})
  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DOPENCV")
  
 -# gives problems in cross-compiling, probably malformed cmake config
 -#find_package(yaml-cpp REQUIRED)
-+find_package(TensorRT REQUIRED)
-+if (VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
-+    # custom for jetson board
-+    LINK_DIRECTORIES("/usr/lib/aarch64-linux-gnu/tegra/")
-+endif()
-+
 +find_package(yaml-cpp REQUIRED)
  
  #-------------------------------------------------------------------------------
@@ -62,10 +93,8 @@ index 8c8619d..542fd00 100644
  #-------------------------------------------------------------------------------
  file(GLOB tkdnn_SRC "src/*.cpp")
 -set(tkdnn_LIBS kernels ${CUDA_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES} ${CUDNN_LIBRARIES} ${OpenCV_LIBS} yaml-cpp)
-+file(GLOB tkdnn_CUSRC "src/kernels/*.cu" "src/sorting.cu")
-+set(tkdnn_LIBS cublas cuda CuDNN::CuDNN ${OpenCV_LIBS} TensorRT::TensorRT yaml-cpp)
- 
- set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+-
+-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 -include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include ${CUDA_INCLUDE_DIRS} ${OPENCV_INCLUDE_DIRS} ${NVINFER_INCLUDES})
 -add_library(tkDNN SHARED ${tkdnn_SRC})
 -target_link_libraries(tkDNN ${tkdnn_LIBS})
@@ -80,8 +109,7 @@ index 8c8619d..542fd00 100644
 -
 -add_executable(test_mnist tests/mnist/test_mnist.cpp)
 -target_link_libraries(test_mnist tkDNN)
-+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include ${CUDA_INCLUDE_DIRS} ${OPENCV_INCLUDE_DIRS} ${TensorRT_INCLUDE_DIRS})
- 
+-
 -add_executable(test_mnistRT tests/mnist/test_mnistRT.cpp)
 -target_link_libraries(test_mnistRT tkDNN)
 -
@@ -120,15 +148,14 @@ index 8c8619d..542fd00 100644
 -
 -add_executable(test_dla34_cnet tests/centernet/dla34_cnet/dla34_cnet.cpp)
 -target_link_libraries(test_dla34_cnet tkDNN)
--
++file(GLOB tkdnn_CUSRC "src/kernels/*.cu" "src/sorting.cu")
++set(tkdnn_LIBS cuda cublas CuDNN::CuDNN ${OpenCV_LIBS} TensorRT::TensorRT yaml-cpp)
+ 
 -# DEMOS
 -add_executable(test_rtinference tests/test_rtinference/rtinference.cpp)
 -target_link_libraries(test_rtinference tkDNN)
-+if(VCPKG_LIBRARY_LINKAGE STREQUAL dynamic)
-+    add_library(tkDNN SHARED ${tkdnn_SRC} ${tkdnn_CUSRC})
-+else()
-+    add_library(tkDNN STATIC ${tkdnn_SRC} ${tkdnn_CUSRC})
-+endif()
++add_library(tkDNN ${tkdnn_SRC} ${tkdnn_CUSRC})
++set_target_properties(tkDNN PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 +target_link_libraries(tkDNN PUBLIC ${tkdnn_LIBS})
  
 -add_executable(map_demo demo/demo/map.cpp)
@@ -138,10 +165,10 @@ index 8c8619d..542fd00 100644
 +else()
 +    # VICTECH : only build yolo4 related
 +    add_executable(test_yolo4 tests/darknet/yolo4.cpp)
-+    target_link_libraries(test_yolo4 PUBLIC tkDNN)
++    target_link_libraries(test_yolo4 PRIVATE CUDA::cudart tkDNN)
 +    install(TARGETS test_yolo4 DESTINATION tools/tkdnn)
 +    add_executable(test_yolo4tiny tests/darknet/yolo4tiny.cpp)
-+    target_link_libraries(test_yolo4tiny PUBLIC tkDNN)
++    target_link_libraries(test_yolo4tiny PRIVATE CUDA::cudart tkDNN)
 +    install(TARGETS test_yolo4tiny DESTINATION tools/tkdnn)
 +endif()
  
@@ -239,7 +266,9 @@ index 8c8619d..542fd00 100644
 +    #TARGETS tkDNN kernels 
 +    TARGETS tkDNN
 +    EXPORT tkDNNTargets 
-+    DESTINATION lib)
++    RUNTIME DESTINATION bin
++    LIBRARY DESTINATION lib
++    ARCHIVE DESTINATION lib)
 +install(
 +    EXPORT tkDNNTargets 
 +    NAMESPACE tkDNN:: 
@@ -257,3 +286,6 @@ index 8c8619d..542fd00 100644
 +  DESTINATION share/tkdnn
  )
 -
+-- 
+2.17.1
+
