@@ -1,0 +1,697 @@
+From 99e0a98032ec057077a6b48ba5d1d8777fceae96 Mon Sep 17 00:00:00 2001
+From: sehee <sehee>
+Date: Mon, 9 Nov 2020 11:12:16 +0900
+Subject: [PATCH] fix-windows-build
+
+---
+ CMakeLists.txt                  | 71 ++++++++++++++++-----------------
+ include/tkDNN/DarknetParser.h   | 19 ++++-----
+ include/tkDNN/DetectionNN.h     |  4 ++
+ include/tkDNN/ImuOdom.h         |  4 ++
+ include/tkDNN/Int8BatchStream.h |  4 ++
+ include/tkDNN/Layer.h           | 43 ++++++++++----------
+ include/tkDNN/Network.h         |  3 +-
+ include/tkDNN/NetworkRT.h       |  3 +-
+ include/tkDNN/Yolo3Detection.h  |  3 +-
+ include/tkDNN/dll.h             | 20 ++++++++++
+ include/tkDNN/test.h            |  5 +++
+ include/tkDNN/utils.h           | 52 ++++++++++++++++--------
+ src/LSTM.cpp                    |  9 ++++-
+ src/Yolo3Detection.cpp          |  4 ++
+ src/utils.cpp                   |  6 +++
+ 15 files changed, 162 insertions(+), 88 deletions(-)
+ create mode 100644 include/tkDNN/dll.h
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 0763a12..13e8690 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -2,9 +2,24 @@ cmake_minimum_required(VERSION 3.17)
+ 
+ project (tkDNN LANGUAGES CUDA CXX)
+ 
+-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fPIC -Wno-deprecated-declarations -Wno-unused-variable")
+-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/tkDNN)
++# CXX language
++set(CMAKE_CXX_STANDARD 11)
++set(CMAKE_POSITION_INDEPENDENT_CODE ON)
++if (NOT MSVC)
++    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations -Wno-unused-variable")
++endif()
++
++# CUDA language
++set(CMAKE_CUDA_FLAGS ${CMAKE_CUDA_FLAGS} --maxrregcount=32)
++if(BUILD_SHARED_LIBS)
++    set(CMAKE_CUDA_RUNTIME_LIBRARY "Shared")
++else()
++    set(CMAKE_CUDA_RUNTIME_LIBRARY "Static")
++endif()
++
++include_directories(
++    ${CMAKE_CURRENT_SOURCE_DIR}/include 
++    ${CMAKE_CURRENT_SOURCE_DIR}/include/tkDNN )
+ 
+ # project specific flags
+ if(DEBUG)
+@@ -12,40 +27,28 @@ if(DEBUG)
+ endif()
+ 
+ add_definitions(-DTKDNN_PATH="${CMAKE_CURRENT_SOURCE_DIR}")
++if(MSVC AND BUILD_SHARED_LIBS)
++	add_definitions(-D${PROJECT_NAME}_DLL)	# use or build Windows DLL
++endif()
+ 
+ #-------------------------------------------------------------------------------
+-# CUDA
++# External Libraries
+ #-------------------------------------------------------------------------------
+-
+-find_package(CUDA 9.0 REQUIRED)
+-SET(CUDA_SEPARABLE_COMPILATION ON)
+-#set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -arch=sm_30 --compiler-options '-fPIC'")
+-set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} --maxrregcount=32)
+-if(VCPKG_LIBRARY_LINKAGE STREQUAL dynamic)
+-    set(CMAKE_CUDA_RUNTIME_LIBRARY "Shared")
+-else()
+-    set(CMAKE_CUDA_RUNTIME_LIBRARY "Static")
+-endif()
++find_package(CUDAToolkit 9.0 REQUIRED)
+ 
+ find_package(CUDNN REQUIRED)
+-include_directories(${CUDNN_INCLUDE_DIR})
++include_directories(${CUDNN_INCLUDE_DIRS})
+ 
+-#-------------------------------------------------------------------------------
+-# External Libraries
+-#-------------------------------------------------------------------------------
++find_package(TensorRT REQUIRED)
++include_directories(${TensorRT_INCLUDE_DIRS})
+ 
+ find_package(Eigen3 REQUIRED)
+ include_directories(${EIGEN3_INCLUDE_DIR})
+ 
+ find_package(OpenCV REQUIRED)
++include_directories(${OPENCV_INCLUDE_DIRS})
+ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DOPENCV")
+ 
+-find_package(TensorRT REQUIRED)
+-if (VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
+-    # custom for jetson board
+-    LINK_DIRECTORIES("/usr/lib/aarch64-linux-gnu/tegra/")
+-endif()
+-
+ find_package(yaml-cpp REQUIRED)
+ 
+ #-------------------------------------------------------------------------------
+@@ -53,16 +56,10 @@ find_package(yaml-cpp REQUIRED)
+ #-------------------------------------------------------------------------------
+ file(GLOB tkdnn_SRC "src/*.cpp")
+ file(GLOB tkdnn_CUSRC "src/kernels/*.cu" "src/sorting.cu")
+-set(tkdnn_LIBS cublas cuda CuDNN::CuDNN ${OpenCV_LIBS} TensorRT::TensorRT yaml-cpp)
++set(tkdnn_LIBS cuda cublas CuDNN::CuDNN ${OpenCV_LIBS} TensorRT::TensorRT yaml-cpp)
+ 
+-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include ${CUDA_INCLUDE_DIRS} ${OPENCV_INCLUDE_DIRS} ${TensorRT_INCLUDE_DIRS})
+-
+-if(VCPKG_LIBRARY_LINKAGE STREQUAL dynamic)
+-    add_library(tkDNN SHARED ${tkdnn_SRC} ${tkdnn_CUSRC})
+-else()
+-    add_library(tkDNN STATIC ${tkdnn_SRC} ${tkdnn_CUSRC})
+-endif()
++add_library(tkDNN ${tkdnn_SRC} ${tkdnn_CUSRC})
++set_target_properties(tkDNN PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+ target_link_libraries(tkDNN PUBLIC ${tkdnn_LIBS})
+ 
+ if(DEBUG)
+@@ -70,10 +67,10 @@ if(DEBUG)
+ else()
+     # VICTECH : only build yolo4 related
+     add_executable(test_yolo4 tests/darknet/yolo4.cpp)
+-    target_link_libraries(test_yolo4 PUBLIC tkDNN)
++    target_link_libraries(test_yolo4 PRIVATE CUDA::cudart tkDNN)
+     install(TARGETS test_yolo4 DESTINATION tools/tkdnn)
+     add_executable(test_yolo4tiny tests/darknet/yolo4tiny.cpp)
+-    target_link_libraries(test_yolo4tiny PUBLIC tkDNN)
++    target_link_libraries(test_yolo4tiny PRIVATE CUDA::cudart tkDNN)
+     install(TARGETS test_yolo4tiny DESTINATION tools/tkdnn)
+ endif()
+ 
+@@ -160,7 +157,9 @@ install(
+     #TARGETS tkDNN kernels 
+     TARGETS tkDNN
+     EXPORT tkDNNTargets 
+-    DESTINATION lib)
++    RUNTIME DESTINATION bin
++    LIBRARY DESTINATION lib
++    ARCHIVE DESTINATION lib)
+ install(
+     EXPORT tkDNNTargets 
+     NAMESPACE tkDNN:: 
+diff --git a/include/tkDNN/DarknetParser.h b/include/tkDNN/DarknetParser.h
+index 0093250..3f7af76 100644
+--- a/include/tkDNN/DarknetParser.h
++++ b/include/tkDNN/DarknetParser.h
+@@ -1,10 +1,11 @@
+ #pragma once
+ #include <iostream>
+ #include "tkdnn.h"
++#include "dll.h"
+ 
+ namespace tk { namespace dnn {
+ 
+-    struct darknetFields_t{
++    struct tkDNN_API darknetFields_t{
+         std::string type = "";
+         int width = 0;
+         int height = 0;
+@@ -34,15 +35,15 @@ namespace tk { namespace dnn {
+         }
+     };
+ 
+-    std::string darknetParseType(const std::string& line);
+-    bool divideNameAndValue(const std::string& line, std::string&name, std::string& value);
+-    std::vector<int> fromStringToIntVec(const std::string& line, const char delimiter);
++    tkDNN_API std::string darknetParseType(const std::string& line);
++    tkDNN_API bool divideNameAndValue(const std::string& line, std::string&name, std::string& value);
++    tkDNN_API std::vector<int> fromStringToIntVec(const std::string& line, const char delimiter);
+     
+-    bool darknetParseFields(const std::string& line, darknetFields_t& fields);
+-    tk::dnn::Network *darknetAddNet(darknetFields_t &fields);
+-    void darknetAddLayer(tk::dnn::Network *net, darknetFields_t &f, std::string wgs_path, 
++    tkDNN_API bool darknetParseFields(const std::string& line, darknetFields_t& fields);
++    tkDNN_API tk::dnn::Network* darknetAddNet(darknetFields_t &fields);
++    tkDNN_API void darknetAddLayer(tk::dnn::Network *net, darknetFields_t &f, std::string wgs_path, 
+                          std::vector<tk::dnn::Layer*> &netLayers, const std::vector<std::string>& names);
+-    std::vector<std::string> darknetReadNames(const std::string& names_file);
+-    tk::dnn::Network* darknetParser(const std::string& cfg_file, const std::string& wgs_path, const std::string& names_file);
++    tkDNN_API std::vector<std::string> darknetReadNames(const std::string& names_file);
++    tkDNN_API tk::dnn::Network* darknetParser(const std::string& cfg_file, const std::string& wgs_path, const std::string& names_file);
+ 
+ }}
+diff --git a/include/tkDNN/DetectionNN.h b/include/tkDNN/DetectionNN.h
+index ba42834..8e3c57a 100644
+--- a/include/tkDNN/DetectionNN.h
++++ b/include/tkDNN/DetectionNN.h
+@@ -4,7 +4,11 @@
+ #include <iostream>
+ #include <signal.h>
+ #include <stdlib.h>    
++#ifdef _WIN32
++#include <windows.h>
++#else
+ #include <unistd.h>
++#endif
+ #include <mutex>
+ #include "utils.h"
+ 
+diff --git a/include/tkDNN/ImuOdom.h b/include/tkDNN/ImuOdom.h
+index 58def96..41921ca 100644
+--- a/include/tkDNN/ImuOdom.h
++++ b/include/tkDNN/ImuOdom.h
+@@ -1,7 +1,11 @@
+ #include <iostream>
+ #include <signal.h>
+ #include <stdlib.h>     /* srand, rand */
++#ifdef _WIN32
++#include <windows.h>
++#else
+ #include <unistd.h>
++#endif
+ #include <mutex>
+ #include <Eigen/Dense>
+ #include "utils.h"
+diff --git a/include/tkDNN/Int8BatchStream.h b/include/tkDNN/Int8BatchStream.h
+index 86ac623..17ad69e 100644
+--- a/include/tkDNN/Int8BatchStream.h
++++ b/include/tkDNN/Int8BatchStream.h
+@@ -12,7 +12,11 @@
+ #include <iomanip>
+ #include <signal.h>
+ #include <stdlib.h>    
++#ifdef _WIN32
++#include <windows.h>
++#else
+ #include <unistd.h>
++#endif
+ #include <mutex>
+ 
+ #include <NvInfer.h>
+diff --git a/include/tkDNN/Layer.h b/include/tkDNN/Layer.h
+index 896854b..5db3dea 100644
+--- a/include/tkDNN/Layer.h
++++ b/include/tkDNN/Layer.h
+@@ -5,6 +5,7 @@
+ #include <vector>
+ #include "utils.h"
+ #include "Network.h"
++#include "dll.h"
+ 
+ namespace tk { namespace dnn {
+ 
+@@ -37,7 +38,7 @@ enum layerType_t {
+ /** 
+     Simple layer Father class
+ */
+-class Layer {
++class tkDNN_API Layer {
+ 
+ public:
+     Layer(Network *net);
+@@ -93,7 +94,7 @@ protected:
+ /**
+     Father class of all layer that need to load trained weights
+ */
+-class LayerWgs : public Layer {
++class tkDNN_API LayerWgs : public Layer {
+ 
+ public:
+     LayerWgs(Network *net, int inputs, int outputs, int kh, int kw, int kt,
+@@ -195,7 +196,7 @@ public:
+ /**
+     Dense (full interconnection) layer
+ */
+-class Dense : public LayerWgs {
++class tkDNN_API Dense : public LayerWgs {
+ 
+ public:
+     Dense(Network *net, int out_ch, std::string fname_weights); 
+@@ -218,7 +219,7 @@ typedef enum {
+ /**
+     Activation layer (it doesnt need weigths)
+ */
+-class Activation : public Layer {
++class tkDNN_API Activation : public Layer {
+ 
+ public:
+     int act_mode;
+@@ -255,7 +256,7 @@ protected:
+         means:    OUTCH
+         variance: OUTCH
+ */
+-class Conv2d : public LayerWgs {
++class tkDNN_API Conv2d : public LayerWgs {
+ 
+ public:
+     Conv2d( Network *net, int out_ch, int kernelH, int kernelW, 
+@@ -308,7 +309,7 @@ protected:
+         (N, C, 1, W) ---> LSTM(HIDDEN, returnSeq=True)  ---> (N, 2*HIDDEN, 1, W)   # W is seqLength 
+         (N, C, 1, W) ---> LSTM(HIDDEN, returnSeq=False) ---> (N, 2*HIDDEN, 1, 1)
+ */
+-class LSTM : public Layer {
++class tkDNN_API LSTM : public Layer {
+ 
+ public:
+     LSTM(Network *net, int hiddensize, bool returnSeq, std::string fname_weights);
+@@ -352,7 +353,7 @@ protected:
+ /**
+     Convolutional 2D layer
+ */
+-class DeConv2d : public Conv2d {
++class tkDNN_API DeConv2d : public Conv2d {
+ 
+ public:
+     DeConv2d( Network *net, int out_ch, int kernelH, int kernelW,
+@@ -369,7 +370,7 @@ public:
+ /**
+     Deformable Convolutionl 2d layer
+ */  
+-class DeformConv2d : public LayerWgs {
++class tkDNN_API DeformConv2d : public LayerWgs {
+ 
+ public:
+     DeformConv2d( Network *net, int out_ch, int deformable_group, int kernelH, int kernelW,
+@@ -403,7 +404,7 @@ protected:
+     Flatten layer
+     is actually a matrix transposition
+ */
+-class Flatten : public Layer {
++class tkDNN_API Flatten : public Layer {
+ 
+ public:
+     Flatten(Network *net); 
+@@ -416,7 +417,7 @@ public:
+ /**
+     Reshape layer
+ */
+-class Reshape : public Layer {
++class tkDNN_API Reshape : public Layer {
+ 
+ public:
+     Reshape(Network *net, dataDim_t new_dim); 
+@@ -432,7 +433,7 @@ public:
+     MulAdd layer
+     apply a multiplication and then an addition for each data
+ */
+-class MulAdd : public Layer {
++class tkDNN_API MulAdd : public Layer {
+ 
+ public:
+     MulAdd(Network *net, dnnType mul, dnnType add); 
+@@ -462,7 +463,7 @@ typedef enum {
+     Pooling layer
+     currenty supported only 2d pooing (also on 3d input)
+ */
+-class Pooling : public Layer {
++class tkDNN_API Pooling : public Layer {
+ 
+ public:
+     int winH, winW;
+@@ -490,7 +491,7 @@ protected:
+ /**
+     Softmax layer
+ */
+-class Softmax : public Layer {
++class tkDNN_API Softmax : public Layer {
+ 
+ public:
+     Softmax(Network *net, const tk::dnn::dataDim_t* dim=nullptr, const cudnnSoftmaxMode_t mode=CUDNN_SOFTMAX_MODE_CHANNEL); 
+@@ -506,7 +507,7 @@ public:
+     Route layer
+     Merge a list of layers
+ */
+-class Route : public Layer {
++class tkDNN_API Route : public Layer {
+ 
+ public:
+     Route(Network *net, Layer **layers, int layers_n, int groups = 1, int group_id = 0); 
+@@ -528,7 +529,7 @@ public:
+     Reorg layer
+     Mantain same dimension but change C*H*W distribution
+ */
+-class Reorg : public Layer {
++class tkDNN_API Reorg : public Layer {
+ 
+ public:
+     Reorg(Network *net, int stride);
+@@ -544,7 +545,7 @@ public:
+     Shortcut layer
+     sum with stride another layer
+ */
+-class Shortcut : public Layer {
++class tkDNN_API Shortcut : public Layer {
+ 
+ public:
+     Shortcut(Network *net, Layer *backLayer); 
+@@ -561,7 +562,7 @@ public:
+     Upsample layer
+     Mantain same dimension but change C*H*W distribution
+ */
+-class Upsample : public Layer {
++class tkDNN_API Upsample : public Layer {
+ 
+ public:
+     Upsample(Network *net, int stride);
+@@ -574,7 +575,7 @@ public:
+     bool reverse;
+ };
+ 
+-struct box {
++struct tkDNN_API box {
+     int cl;
+     float x, y, w, h;
+     float prob;
+@@ -585,7 +586,7 @@ struct box {
+         std::cout<<"x: "<<x<<"\ty: "<<y<<"\tw: "<<w<<"\th: "<<h<<"\tcl: "<<cl<<"\tprob: "<<prob<<std::endl;
+     }
+ };
+-struct sortable_bbox {
++struct tkDNN_API sortable_bbox {
+     int index;
+     int cl;
+     float **probs;
+@@ -594,7 +595,7 @@ struct sortable_bbox {
+ /**
+     Yolo3 layer
+ */
+-class Yolo : public Layer {
++class tkDNN_API Yolo : public Layer {
+ 
+ public:
+     struct box {
+@@ -633,7 +634,7 @@ public:
+ /**
+     Region layer
+ */
+-class Region : public Layer {
++class tkDNN_API Region : public Layer {
+ 
+ public:
+     Region(Network *net, int classes, int coords, int num);
+diff --git a/include/tkDNN/Network.h b/include/tkDNN/Network.h
+index 2d95215..06449a7 100644
+--- a/include/tkDNN/Network.h
++++ b/include/tkDNN/Network.h
+@@ -3,6 +3,7 @@
+ 
+ #include <string>
+ #include "utils.h"
++#include "dll.h"
+ 
+ namespace tk { namespace dnn {
+ 
+@@ -35,7 +36,7 @@ struct dataDim_t {
+ class Layer;
+ const int MAX_LAYERS = 512;
+ 
+-class Network {
++class tkDNN_API Network {
+ 
+ public:
+     Network(dataDim_t input_dim);
+diff --git a/include/tkDNN/NetworkRT.h b/include/tkDNN/NetworkRT.h
+index aceca56..857e2e9 100644
+--- a/include/tkDNN/NetworkRT.h
++++ b/include/tkDNN/NetworkRT.h
+@@ -6,6 +6,7 @@
+ #include "Network.h"
+ #include "Layer.h"
+ #include <NvInfer.h>
++#include "dll.h"
+ 
+ namespace tk { namespace dnn {
+ 
+@@ -49,7 +50,7 @@ public:
+ 
+ 
+ 
+-class NetworkRT {
++class tkDNN_API NetworkRT {
+ 
+ public:
+     nvinfer1::DataType dtRT;
+diff --git a/include/tkDNN/Yolo3Detection.h b/include/tkDNN/Yolo3Detection.h
+index 8593341..e86b30d 100644
+--- a/include/tkDNN/Yolo3Detection.h
++++ b/include/tkDNN/Yolo3Detection.h
+@@ -4,10 +4,11 @@
+ #include <opencv2/opencv.hpp>
+ 
+ #include "DetectionNN.h"
++#include "dll.h"
+ 
+ namespace tk { namespace dnn { 
+ 
+-class Yolo3Detection : public DetectionNN
++class tkDNN_API Yolo3Detection : public DetectionNN
+ {
+ private:
+     int num = 0;
+diff --git a/include/tkDNN/dll.h b/include/tkDNN/dll.h
+new file mode 100644
+index 0000000..1254b2b
+--- /dev/null
++++ b/include/tkDNN/dll.h
+@@ -0,0 +1,20 @@
++#ifndef TKDNN_DLL_H
++#define TKDNN_DLL_H
++
++#undef tkDNN_API
++
++#ifdef tkDNN_DLL
++
++#ifdef tkDNN_EXPORTS
++#define tkDNN_API __declspec(dllexport)
++#else
++#define tkDNN_API __declspec(dllimport)
++#endif
++
++#else
++
++#define tkDNN_API
++
++#endif
++
++#endif /*TKDNN_DLL_H*/
+diff --git a/include/tkDNN/test.h b/include/tkDNN/test.h
+index 73a156c..b3d6db7 100644
+--- a/include/tkDNN/test.h
++++ b/include/tkDNN/test.h
+@@ -29,7 +29,12 @@ int testInference(std::vector<std::string> input_bins, std::vector<std::string>
+     readBinaryFile(input_bins[0], net->input_dim.tot(), &input_h, &data);
+ 
+     // outputs
++#ifdef _WIN32
++    std::vector<dnnType*> cudnn_out(outputs.size());
++    std::vector<dnnType*> rt_out(outputs.size());
++#else
+     dnnType *cudnn_out[outputs.size()], *rt_out[outputs.size()]; 
++#endif
+ 
+     tk::dnn::dataDim_t dim1 =  net->input_dim; //input dim
+     printCenteredTitle(" CUDNN inference ", '=', 30); {
+diff --git a/include/tkDNN/utils.h b/include/tkDNN/utils.h
+index efbc8e2..a921afb 100644
+--- a/include/tkDNN/utils.h
++++ b/include/tkDNN/utils.h
+@@ -12,8 +12,14 @@
+ #include <cublas_v2.h>
+ #include <cudnn.h>
+ 
++#ifdef _WIN32
++#include <windows.h>
++#include <chrono>
++#else
+ #include <unistd.h>
++#endif
+ #include <ios>
++#include "dll.h"
+ 
+ 
+ #define dnnType float
+@@ -38,16 +44,28 @@
+ 
+ #define TKDNN_VERBOSE 0
+ 
++#ifdef _WIN32
++// Simple Timer 
++#define TKDNN_TSTART std::chrono::steady_clock::time_point start, end;               \
++                     start = std::chrono::steady_clock::now();
++
++#define TKDNN_TSTOP_C(col, show)  end = std::chrono::steady_clock::now();       \
++    double t_ns = std::chrono::duration_cast<std::chrono::nanoseconds> (end - start).count(); \
++    if(show) std::cout<<col<<"Time:"<<std::setw(16)<<t_ns<<" ms\n"<<COL_END; 
++
++#define TKDNN_TSTOP TKDNN_TSTOP_C(COL_CYANB, TKDNN_VERBOSE)
++#else
+ // Simple Timer 
+ #define TKDNN_TSTART timespec start, end;                               \
+-                    clock_gettime(CLOCK_MONOTONIC, &start);            
++                     clock_gettime(CLOCK_MONOTONIC, &start);            
+ 
+ #define TKDNN_TSTOP_C(col, show)  clock_gettime(CLOCK_MONOTONIC, &end);       \
+-    double t_ns = ((double)(end.tv_sec - start.tv_sec) * 1.0e9 +       \
+-                  (double)(end.tv_nsec - start.tv_nsec))/1.0e6;        \
+-    if(show) std::cout<<col<<"Time:"<<std::setw(16)<<t_ns<<" ms\n"<<COL_END; 
++     double t_ns = ((double)(end.tv_sec - start.tv_sec) * 1.0e9 +       \
++                   (double)(end.tv_nsec - start.tv_nsec))/1.0e6;        \
++     if(show) std::cout<<col<<"Time:"<<std::setw(16)<<t_ns<<" ms\n"<<COL_END; 
+ 
+ #define TKDNN_TSTOP TKDNN_TSTOP_C(COL_CYANB, TKDNN_VERBOSE)
++#endif
+ 
+ /********************************************************
+  * Prints the error message, and exits
+@@ -101,23 +119,23 @@ typedef enum {
+   ERROR_CUDNNvsTENSORRT = 8    
+ } resultError_t;
+ 
+-void printCenteredTitle(const char *title, char fill, int dim = 30);
+-bool fileExist(const char *fname);
+-void downloadWeightsifDoNotExist(const std::string& input_bin, const std::string& test_folder, const std::string& weights_url);
+-void readBinaryFile(std::string fname, int size, dnnType** data_h, dnnType** data_d, int seek = 0);
+-int checkResult(int size, dnnType *data_d, dnnType *correct_d, bool device = true, int limit = 10);
+-void printDeviceVector(int size, dnnType* vec_d, bool device = true);
+-float getColor(const int c, const int x, const int max);
+-void resize(int size, dnnType **data);
++tkDNN_API void printCenteredTitle(const char *title, char fill, int dim = 30);
++tkDNN_API bool fileExist(const char *fname);
++tkDNN_API void downloadWeightsifDoNotExist(const std::string& input_bin, const std::string& test_folder, const std::string& weights_url);
++tkDNN_API void readBinaryFile(std::string fname, int size, dnnType** data_h, dnnType** data_d, int seek = 0);
++tkDNN_API int checkResult(int size, dnnType *data_d, dnnType *correct_d, bool device = true, int limit = 10);
++tkDNN_API void printDeviceVector(int size, dnnType* vec_d, bool device = true);
++tkDNN_API float getColor(const int c, const int x, const int max);
++tkDNN_API void resize(int size, dnnType **data);
+ 
+-void matrixTranspose(cublasHandle_t handle, dnnType* srcData, dnnType* dstData, int rows, int cols);
++tkDNN_API void matrixTranspose(cublasHandle_t handle, dnnType* srcData, dnnType* dstData, int rows, int cols);
+ 
+-void matrixMulAdd(  cublasHandle_t handle, dnnType* srcData, dnnType* dstData, 
++tkDNN_API void matrixMulAdd(  cublasHandle_t handle, dnnType* srcData, dnnType* dstData, 
+                     dnnType* add_vector, int dim, dnnType mul);
+ 
+-void getMemUsage(double& vm_usage_kb, double& resident_set_kb);
+-void printCudaMemUsage();
+-void removePathAndExtension(const std::string &full_string, std::string &name);
++tkDNN_API void getMemUsage(double& vm_usage_kb, double& resident_set_kb);
++tkDNN_API void printCudaMemUsage();
++tkDNN_API void removePathAndExtension(const std::string &full_string, std::string &name);
+ static inline bool isCudaPointer(void *data) {
+   cudaPointerAttributes attr;
+   return cudaPointerGetAttributes(&attr, data) == 0;
+diff --git a/src/LSTM.cpp b/src/LSTM.cpp
+index 511fbee..3139bdc 100644
+--- a/src/LSTM.cpp
++++ b/src/LSTM.cpp
+@@ -88,9 +88,14 @@ LSTM::LSTM( Network *net, int hiddensize, bool returnSeq, std::string fname_weig
+ 
+ #if CUDNN_MAJOR > 7
+     checkCUDNN(cudnnSetRNNDescriptor_v6(net->cudnnHandle,
++        rnnDesc, stateSize, numLayers, dropoutDesc,
++        cudnnRNNInputMode_t::CUDNN_LINEAR_INPUT,
++        cudnnDirectionMode_t::CUDNN_UNIDIRECTIONAL,
++        cudnnRNNMode_t::CUDNN_LSTM,
++        cudnnRNNAlgo_t::CUDNN_RNN_ALGO_STANDARD,
++        net->dataType));
+ #else
+     checkCUDNN(cudnnSetRNNDescriptor(net->cudnnHandle,
+-#endif
+         rnnDesc, stateSize, numLayers, dropoutDesc,
+         cudnnRNNInputMode_t::CUDNN_LINEAR_INPUT,
+         //(bidirectional ? cudnnDirectionMode_t::CUDNN_BIDIRECTIONAL : cudnnDirectionMode_t::CUDNN_UNIDIRECTIONAL),
+@@ -98,7 +103,7 @@ LSTM::LSTM( Network *net, int hiddensize, bool returnSeq, std::string fname_weig
+         cudnnRNNMode_t::CUDNN_LSTM,
+         cudnnRNNAlgo_t::CUDNN_RNN_ALGO_STANDARD,
+         net->dataType));
+-
++#endif
+ 
+     // Get temp space sizes
+     checkCUDNN(cudnnGetRNNWorkspaceSize(net->cudnnHandle,
+diff --git a/src/Yolo3Detection.cpp b/src/Yolo3Detection.cpp
+index e9b0064..3804ea7 100644
+--- a/src/Yolo3Detection.cpp
++++ b/src/Yolo3Detection.cpp
+@@ -91,7 +91,11 @@ void Yolo3Detection::preprocess(cv::Mat &frame, const int bi){
+ void Yolo3Detection::postprocess(const int bi, const bool mAP){
+ 
+     //get yolo outputs
++#ifdef _WIN32
++    std::vector<dnnType*> rt_out(netRT->pluginFactory->n_yolos);
++#else
+     dnnType *rt_out[netRT->pluginFactory->n_yolos]; 
++#endif
+     for(int i=0; i<netRT->pluginFactory->n_yolos; i++) 
+         rt_out[i] = (dnnType*)netRT->buffersRT[i+1] + netRT->buffersDIM[i+1].tot()*bi;
+ 
+diff --git a/src/utils.cpp b/src/utils.cpp
+index 65030f0..2688ca6 100644
+--- a/src/utils.cpp
++++ b/src/utils.cpp
+@@ -192,7 +192,13 @@ void getMemUsage(double& vm_usage_kb, double& resident_set_kb){
+ 
+    stat_stream.close();
+ 
++#ifdef _WIN32
++   SYSTEM_INFO siSysInfo;
++   GetSystemInfo(&siSysInfo); 
++   long page_size_kb = siSysInfo.dwPageSize / 1024;
++#else
+    long page_size_kb = sysconf(_SC_PAGE_SIZE) / 1024; // in case x86-64 is configured to use 2MB pages
++#endif
+    vm_usage_kb     = vsize / 1024.0;  
+    resident_set_kb = rss * page_size_kb;
+ }
+-- 
+2.17.1
+

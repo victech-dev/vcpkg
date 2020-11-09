@@ -9,7 +9,7 @@ vcpkg_from_github(
     PATCHES
       renew_cmakelist_for_vcpkg.patch
       clean_up_include.patch
-      fix-window-build.patch
+      fix-windows-build.patch
 )
 
 #make sure we don't use any integrated pre-built library nor any unnecessary CMake module
