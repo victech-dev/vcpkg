@@ -1,26 +1,28 @@
-From ae00c6988ea100ef754440b17df80243325057a8 Mon Sep 17 00:00:00 2001
+From b0146f25b25bd270d954fe9eeabbebf69a914f50 Mon Sep 17 00:00:00 2001
 From: sehee <sehee>
-Date: Mon, 9 Nov 2020 19:27:32 +0900
+Date: Wed, 11 Nov 2020 00:10:11 +0900
 Subject: [PATCH] fix windows build
 
 ---
  include/tkDNN/CenternetDetection.h |  3 +-
- include/tkDNN/DarknetParser.h      | 19 +++++------
+ include/tkDNN/DarknetParser.h      | 19 +++++----
  include/tkDNN/DetectionNN.h        |  5 ++-
  include/tkDNN/ImuOdom.h            |  5 ++-
  include/tkDNN/Int8BatchStream.h    |  5 ++-
- include/tkDNN/Layer.h              | 45 +++++++++++++-------------
- include/tkDNN/MobilenetDetection.h |  5 +--
- include/tkDNN/Network.h            |  5 +--
+ include/tkDNN/Layer.h              | 45 ++++++++++----------
+ include/tkDNN/MobilenetDetection.h |  5 ++-
+ include/tkDNN/Network.h            |  5 ++-
  include/tkDNN/NetworkRT.h          |  3 +-
  include/tkDNN/Yolo3Detection.h     |  3 +-
- include/tkDNN/dll.h                | 20 ++++++++++++
+ include/tkDNN/dll.h                | 20 +++++++++
  include/tkDNN/test.h               |  5 +++
- include/tkDNN/utils.h              | 51 ++++++++++++++++++++----------
- src/LSTM.cpp                       |  9 ++++--
- src/Yolo3Detection.cpp             |  4 +++
- src/utils.cpp                      | 12 +++++++
- 16 files changed, 139 insertions(+), 60 deletions(-)
+ include/tkDNN/utils.h              | 51 ++++++++++++++--------
+ src/LSTM.cpp                       |  9 +++-
+ src/NetworkRT.cpp                  | 68 ++++++++++++++++++------------
+ src/Yolo.cpp                       |  2 +-
+ src/Yolo3Detection.cpp             |  4 ++
+ src/utils.cpp                      | 12 ++++++
+ 18 files changed, 182 insertions(+), 87 deletions(-)
  create mode 100644 include/tkDNN/dll.h
 
 diff --git a/include/tkDNN/CenternetDetection.h b/include/tkDNN/CenternetDetection.h
@@ -639,6 +641,130 @@ index 511fbee..3139bdc 100644
  
      // Get temp space sizes
      checkCUDNN(cudnnGetRNNWorkspaceSize(net->cudnnHandle,
+diff --git a/src/NetworkRT.cpp b/src/NetworkRT.cpp
+index a6725aa..fb8477d 100644
+--- a/src/NetworkRT.cpp
++++ b/src/NetworkRT.cpp
+@@ -660,10 +660,10 @@ IPlugin* PluginFactory::createPlugin(const char* layerName, const void* serialDa
+     }
+ 
+     if(name.find("Region") == 0) {
+-        RegionRT *r = new RegionRT(readBUF<int>(buf),    //classes
+-                                    readBUF<int>(buf),    //coords
+-                                    readBUF<int>(buf));   //num
+-
++        int classes = readBUF<int>(buf);
++        int coords = readBUF<int>(buf);
++        int num = readBUF<int>(buf);
++        RegionRT *r = new RegionRT(classes, coords, num);
+         r->c = readBUF<int>(buf);
+         r->h = readBUF<int>(buf);
+         r->w = readBUF<int>(buf);
+@@ -693,21 +693,23 @@ IPlugin* PluginFactory::createPlugin(const char* layerName, const void* serialDa
+     } 
+ 
+     if(name.find("Pooling") == 0) {
+-        MaxPoolFixedSizeRT *r = new MaxPoolFixedSizeRT( readBUF<int>(buf), //c
+-                                                        readBUF<int>(buf), //h
+-                                                        readBUF<int>(buf), //w
+-                                                        readBUF<int>(buf), //n
+-                                                        readBUF<int>(buf), //strideH
+-                                                        readBUF<int>(buf), //strideW
+-                                                        readBUF<int>(buf), //winSize
+-                                                        readBUF<int>(buf)); //padding
++        int c = readBUF<int>(buf);
++        int h = readBUF<int>(buf);
++        int w = readBUF<int>(buf);
++        int n = readBUF<int>(buf);
++        int strideH = readBUF<int>(buf);
++        int strideW = readBUF<int>(buf);
++        int winSize = readBUF<int>(buf);
++        int padding = readBUF<int>(buf);
++        MaxPoolFixedSizeRT *r = new MaxPoolFixedSizeRT(c, h, w, n, strideH, strideW, winSize, padding);
+         return r;
+     }
+ 
+     if(name.find("Resize") == 0) {
+-        ResizeLayerRT *r = new ResizeLayerRT(readBUF<int>(buf), //o_c
+-                                            readBUF<int>(buf), //o_h
+-                                            readBUF<int>(buf)); //o_w
++        int o_c = readBUF<int>(buf);
++        int o_h = readBUF<int>(buf);
++        int o_w = readBUF<int>(buf);
++        ResizeLayerRT *r = new ResizeLayerRT(o_c, o_h, o_w);
+         r->i_c = readBUF<int>(buf);
+         r->i_h = readBUF<int>(buf);
+         r->i_w = readBUF<int>(buf);
+@@ -737,10 +739,10 @@ IPlugin* PluginFactory::createPlugin(const char* layerName, const void* serialDa
+     } 
+ 
+     if(name.find("Yolo") == 0) {
+-        YoloRT *r = new YoloRT(readBUF<int>(buf),    //classes
+-                                readBUF<int>(buf),   //num
+-                                nullptr,
+-                                readBUF<int>(buf));   //n_masks
++        int classes = readBUF<int>(buf);
++        int num = readBUF<int>(buf);
++        int n_masks = readBUF<int>(buf);
++        YoloRT *r = new YoloRT(classes, num, nullptr, n_masks);
+         r->c = readBUF<int>(buf);
+         r->h = readBUF<int>(buf);
+         r->w = readBUF<int>(buf);
+@@ -771,7 +773,9 @@ IPlugin* PluginFactory::createPlugin(const char* layerName, const void* serialDa
+     } 
+ 
+     if(name.find("Route") == 0) {
+-        RouteRT *r = new RouteRT(readBUF<int>(buf),readBUF<int>(buf));
++        int groups = readBUF<int>(buf);
++        int group_id = readBUF<int>(buf);
++        RouteRT *r = new RouteRT(groups, group_id);
+         r->in = readBUF<int>(buf);
+         for(int i=0; i<RouteRT::MAX_INPUTS; i++)
+             r->c_in[i] = readBUF<int>(buf);
+@@ -782,12 +786,24 @@ IPlugin* PluginFactory::createPlugin(const char* layerName, const void* serialDa
+     } 
+ 
+     if(name.find("Deformable") == 0) {
+-        DeformableConvRT *r = new DeformableConvRT(readBUF<int>(buf), readBUF<int>(buf), readBUF<int>(buf),
+-                                                    readBUF<int>(buf), readBUF<int>(buf), readBUF<int>(buf),
+-                                                    readBUF<int>(buf), readBUF<int>(buf),
+-                                                    readBUF<int>(buf),readBUF<int>(buf),readBUF<int>(buf),readBUF<int>(buf),
+-                                                    readBUF<int>(buf),readBUF<int>(buf),readBUF<int>(buf),readBUF<int>(buf),
+-                                                    nullptr); 
++        int chunk_dim = readBUF<int>(buf);
++        int kh = readBUF<int>(buf);
++        int kw = readBUF<int>(buf);
++        int sh = readBUF<int>(buf);
++        int sw = readBUF<int>(buf);
++        int ph = readBUF<int>(buf);
++        int pw = readBUF<int>(buf);
++		int deformableGroup = readBUF<int>(buf);
++        int i_n = readBUF<int>(buf);
++        int i_c = readBUF<int>(buf);
++        int i_h = readBUF<int>(buf);
++        int i_w = readBUF<int>(buf);
++		int o_n = readBUF<int>(buf);
++        int o_c = readBUF<int>(buf);
++        int o_h = readBUF<int>(buf);
++        int o_w = readBUF<int>(buf);
++        DeformableConvRT *r = new DeformableConvRT(chunk_dim, kh, kw, sh, sw, ph, pw, 
++                deformableGroup, i_n, i_c, i_h, i_w, o_n, o_c, o_h, o_w, nullptr); 
+         dnnType *aus = new dnnType[r->chunk_dim*2];
+         for(int i=0; i<r->chunk_dim*2; i++)
+     		aus[i] = readBUF<dnnType>(buf);
+diff --git a/src/Yolo.cpp b/src/Yolo.cpp
+index a4416be..70d8833 100644
+--- a/src/Yolo.cpp
++++ b/src/Yolo.cpp
+@@ -155,7 +155,7 @@ int Yolo::computeDetections(Yolo::detection *dets, int &ndets, int netw, int net
+         }
+     }
+ 
+-    correct_yolo_boxes(dets + ndets, count, netw, neth, netw, neth, 0);
++    correct_yolo_boxes(dets + ndets, count - ndets, netw, neth, netw, neth, 0);
+     ndets = count;
+     return count;
+ }
 diff --git a/src/Yolo3Detection.cpp b/src/Yolo3Detection.cpp
 index e9b0064..3804ea7 100644
 --- a/src/Yolo3Detection.cpp
