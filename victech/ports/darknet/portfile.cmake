@@ -7,6 +7,7 @@ vcpkg_from_github(
  PATCHES
      fix_cmake_ver.patch
      fix_cmake_flag_for_arm.patch
+     add_tkdnn_export.patch
 )
 
 # enable CUDA inside DARKNET
@@ -152,6 +153,38 @@ if(EXISTS ${CURRENT_PACKAGES_DIR}/bin/uselib_track${VCPKG_TARGET_EXECUTABLE_SUFF
 endif()
 file(COPY ${SOURCE_PATH}/cfg DESTINATION ${CURRENT_PACKAGES_DIR}/tools/${PORT})
 file(COPY ${SOURCE_PATH}/data DESTINATION ${CURRENT_PACKAGES_DIR}/tools/${PORT})
+# build darknet_export with CPU only options
+# https://git.hipert.unimore.it/fgatti/darknet
+if(VCPKG_TARGET_IS_LINUX)
+  file(REMOVE_RECURSE ${CURRENT_BUILDTREES_DIR}/build_darknet_export)
+  file(MAKE_DIRECTORY ${CURRENT_BUILDTREES_DIR}/build_darknet_export)
+  set(error_code 1)
+  execute_process(COMMAND "cmake" "${SOURCE_PATH}" 
+    "-DCMAKE_BUILD_TYPE=Release" 
+    "-DCMAKE_TOOLCHAIN_FILE=${VCPKG_ROOT_DIR}/scripts/buildsystems/vcpkg.cmake"
+    "-DVCPKG_TARGET_TRIPLET=${VCPKG_TARGET_ARCHITECTURE}-linux"
+    "-DBUILD_SHARED_LIBS=OFF"
+    "-DBUILD_USELIB_TRACK=OFF"
+    "-DENABLE_OPENCV=OFF"
+    "-DENABLE_CUDA=OFF" 
+    "-DENABLE_CUDNN=OFF"
+    "-DENABLE_CUDNN_HALF=OFF"
+    "-DENABLE_ZED_CAMERA=OFF"
+    WORKING_DIRECTORY ${CURRENT_BUILDTREES_DIR}/build_darknet_export
+    OUTPUT_QUIET ERROR_QUIET RESULT_VARIABLE error_code)
+  if(error_code)
+    message(FATAL_ERROR "! cmake failed for darknet_export")
+  endif()
+  set(error_code 1)
+  execute_process(COMMAND "make" "-j8" 
+    WORKING_DIRECTORY ${CURRENT_BUILDTREES_DIR}/build_darknet_export
+    OUTPUT_QUIET ERROR_QUIET RESULT_VARIABLE error_code)
+  if(error_code)
+    message(FATAL_ERROR "! build failed for darknet_export")
+  endif()
+  file(RENAME ${CURRENT_BUILDTREES_DIR}/build_darknet_export/darknet${VCPKG_TARGET_EXECUTABLE_SUFFIX} ${CURRENT_BUILDTREES_DIR}/build_darknet_export/darknet_export${VCPKG_TARGET_EXECUTABLE_SUFFIX})
+  file(COPY ${CURRENT_BUILDTREES_DIR}/build_darknet_export/darknet_export${VCPKG_TARGET_EXECUTABLE_SUFFIX} DESTINATION ${CURRENT_PACKAGES_DIR}/tools/${PORT})
+endif()
 vcpkg_copy_tool_dependencies(${CURRENT_PACKAGES_DIR}/tools/${PORT})
 
 if(VCPKG_LIBRARY_LINKAGE STREQUAL static)
