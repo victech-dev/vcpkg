@@ -91,8 +91,9 @@ set(ENV{TF_DOWNLOAD_CLANG} 0)
 set(ENV{NCCL_INSTALL_PATH} "")
 set(ENV{CC_OPT_FLAGS} "/arch:AVX")
 set(ENV{TF_NEED_CUDA} 1)
-set(ENV{TF_NCCL_VERSION} 2.7)
+set(ENV{TF_NCCL_VERSION} "")
 set(ENV{TF_NEED_TENSORRT} 1) # need tensorrt
+set(ENV{TF_TENSORRT_VERSION} 6.0) # tensorrt version
 if (VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64") # assum Jetson Xavier with JetPack 4.3
     set(ENV{TF_CUDA_VERSION} 10.0)
     set(ENV{TF_CUDNN_VERSION} 7.6.3)
@@ -105,7 +106,7 @@ set(ENV{TF_CUDA_COMPUTE_CAPABILITIES} "5.3,7.2,7.5") # Jetson Xavier:7.2, RTX 20
 message(STATUS "Configuring TensorFlow")
 
 vcpkg_execute_required_process(
-    COMMAND ${PYTHON3} ${SOURCE_PATH}/configure.py
+    COMMAND ${PYTHON3} ${SOURCE_PATH}/configure.py --workspace "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel"
     WORKING_DIRECTORY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel
     LOGNAME config-${TARGET_TRIPLET}-rel
 )
