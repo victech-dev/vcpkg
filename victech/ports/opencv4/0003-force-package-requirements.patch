@@ -1,5 +1,5 @@
 diff --git a/cmake/OpenCVFindLibsGrfmt.cmake b/cmake/OpenCVFindLibsGrfmt.cmake
-index 0beaf19..3ba1ebd 100644
+index 0beaf19..127906a 100644
 --- a/cmake/OpenCVFindLibsGrfmt.cmake
 +++ b/cmake/OpenCVFindLibsGrfmt.cmake
 @@ -6,7 +6,7 @@
@@ -70,7 +70,7 @@ index 0beaf19..3ba1ebd 100644
  # --- GDAL (optional) ---
  if(WITH_GDAL)
 -    find_package(GDAL QUIET)
-+  find_package(GDAL REQUIRED)
++    find_package(GDAL REQUIRED)
  
      if(NOT GDAL_FOUND)
          set(HAVE_GDAL NO)

@@ -6,27 +6,27 @@ if (EXISTS "${CURRENT_INSTALLED_DIR}/share/opencv3")
   message(FATAL_ERROR "OpenCV 3 is installed, please uninstall and try again:\n    vcpkg remove opencv3")
 endif()
 
-set(OPENCV_VERSION "4.3.0")
+set(OPENCV_VERSION "4.4.0")
 
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO opencv/opencv
     REF ${OPENCV_VERSION}
-    SHA512 ac22b41fffa3e3138701fa0df0d19900b3ce72e168f4478ecdc593c5c9fd004b4b1b26612d62c25b681db99a8720db7a11b5b224e576e595624965fa79b0f383
+    SHA512 ce4bada7b57c1a00439eca02abcba262732d5eabfd26090f6f83642d747a9a1a7908230bcd01a2b999c509e0c43c8b0dcb2b93ac824518b79cffe533f22652bb
     HEAD_REF master
     PATCHES
       0001-disable-downloading.patch
       0002-install-options.patch
       0003-force-package-requirements.patch
       0004-fix-policy-CMP0057.patch
-      0009-fix-uwp.patch
-      0010-fix-gtk-dependency.patch
+      0007-fix-gtk-dependency.patch
 )
 
 file(REMOVE "${SOURCE_PATH}/cmake/FindCUDNN.cmake")
 file(REMOVE "${SOURCE_PATH}/cmake/FindCUDA.cmake")
 file(REMOVE_RECURSE "${SOURCE_PATH}/cmake/FindCUDA")
-file(COPY ${CMAKE_CURRENT_LIST_DIR}/FindCUDA.cmake DESTINATION ${SOURCE_PATH}/cmake/)  # backported from CMake 3.18, remove when released
+file(COPY ${CMAKE_CURRENT_LIST_DIR}/cuda_11/FindCUDA.cmake DESTINATION ${SOURCE_PATH}/cmake/)  # backported from CMake 3.18, remove when released
+file(COPY ${CMAKE_CURRENT_LIST_DIR}/cuda_11/FindCUDA DESTINATION ${SOURCE_PATH}/cmake/)  # backported from CMake 3.18, remove when released
 
 string(COMPARE EQUAL "${VCPKG_CRT_LINKAGE}" "static" BUILD_WITH_STATIC_CRT)
 
@@ -126,7 +126,7 @@ if("contrib" IN_LIST FEATURES)
     OUT_SOURCE_PATH CONTRIB_SOURCE_PATH
     REPO opencv/opencv_contrib
     REF ${OPENCV_VERSION}
-    SHA512 cfeda06a9f86ccaedbca9521c35bf685c3d8d3a182fb943f9378a7ecd1949d6e2e9df1673f0e3e9686840ca4c9e5a8e8cf2ac962a33b6e1f88f8278abd8c37e5
+    SHA512 d1a29a4a343f55fe2ae04966d2fc2d20765de719619bea68b84ee72f432777062727d8105b0aa168f359e468544b2ea930b1a4f8dc059e51de27d8af229c6b6b
     HEAD_REF master
     PATCHES
       0005-add-missing-stdexcept-include.patch
