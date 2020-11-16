@@ -1,0 +1,5 @@
+Source: tkdnn
+Version: 2020-08-06
+Supports: linux&x64 | linux&arm64
+Description: tkDNN is a Deep Neural Network library built with cuDNN and tensorRT primitives, specifically thought to work on NVIDIA Jetson Boards
+Build-Depends: cuda, cudnn, tensorrt, yaml-cpp, opengl (arm64), eigen3, opencv

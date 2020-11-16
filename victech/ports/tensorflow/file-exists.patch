@@ -1,0 +1,13 @@
+diff --git a/configure.py b/configure.py
+index da6af8f8..647fd48e 100644
+--- a/configure.py
++++ b/configure.py
+@@ -190,7 +190,7 @@ def get_python_path(environ_cp, python_bin_path):
+ 
+   paths = []
+   for path in all_paths:
+-    if os.path.isdir(path):
++    if os.path.isdir(path) or True:
+       paths.append(path)
+   return paths
+ 
