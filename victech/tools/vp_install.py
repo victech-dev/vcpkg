@@ -67,8 +67,8 @@ if not (args.exportonly or args.noremove):
     shutil.rmtree(str(cwd/'installed'), ignore_errors=True)
     print("-- removing previous packages")
     shutil.rmtree(str(cwd/'packages'), ignore_errors=True)
-    print("-- removing previous downloads")
-    shutil.rmtree(str(cwd/'downloads'), ignore_errors=True)
+    # print("-- removing previous downloads")
+    # shutil.rmtree(str(cwd/'downloads'), ignore_errors=True)
     print("-- removing previous cache")
     shutil.rmtree(str(cache_path), ignore_errors=True)
 
