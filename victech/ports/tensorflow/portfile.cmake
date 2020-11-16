@@ -1,5 +1,3 @@
-include(vcpkg_common_functions)
-
 message(WARNING "This tensorflow port currently is experimental on Windows and Linux platforms.")
 
 if (VCPKG_TARGET_ARCHITECTURE STREQUAL x86)
