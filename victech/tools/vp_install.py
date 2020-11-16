@@ -29,9 +29,11 @@ assert cwd.stem == 'vcpkg', "Run this script in vcpkg folder"
 # resolve triplet
 triplet = None
 cache_path = None
+vcpkg_envs = {}
 if sys.platform == 'linux':
     if platform.machine() == 'aarch64':
         triplet = "arm64-linux"
+        vcpkg_envs['VCPKG_FORCE_SYSTEM_BINARIES'] = '1'
     else:
         triplet = "x64-linux"
     cache_path = Path.home() / '.cache' / 'vcpkg'
@@ -76,12 +78,12 @@ if not args.exportonly:
     # run vcpkg install
     install_cmds = ["./vcpkg", "install", *pkg_list, "--triplet", triplet, "--overlay-ports=victech/ports"]
     print("-- run vcpkg install:", " ".join(install_cmds))
-    subprocess.run(install_cmds)
+    subprocess.run(install_cmds, env={**os.environ, **vcpkg_envs})
 
 # export results
 export_cmds = ["./vcpkg", "export", *pkg_list, "--triplet", triplet, "--raw", f"--output=vcpkg_{triplet}"]
 print("-- run vcpkg export:", " ".join(export_cmds))
-subprocess.run(export_cmds)
+subprocess.run(export_cmds, env={**os.environ, **vcpkg_envs})
 
 # create tar.gz
 tar_cmds = ["tar", "-czf", f"vcpkg_{triplet}.tar.gz", f"./vcpkg_{triplet}"]
