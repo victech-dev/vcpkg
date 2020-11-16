@@ -9,8 +9,8 @@ import argparse
 parser = argparse.ArgumentParser(description="vp_install parser")
 parser.add_argument('--exportonly', dest='exportonly', action='store_true')
 parser.set_defaults(exportonly=False)
-parser.add_argument('--noremove', dest='noremove', action='store_true')
-parser.set_defaults(noremove=False)
+parser.add_argument('--clean', dest='clean', action='store_true')
+parser.set_defaults(clean=False)
 args = parser.parse_args()
 
 def get_identity_file():
@@ -59,7 +59,7 @@ pkg_list = [
 ]
 print("-- package list:", pkg_list)
 
-if not (args.exportonly or args.noremove):
+if not args.exportonly and args.clean:
     # remove previous install/package/cache directories
     print("-- removing previous buildtrees")
     shutil.rmtree(str(cwd/'buildtrees'), ignore_errors=True)
