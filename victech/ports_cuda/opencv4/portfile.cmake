@@ -20,6 +20,7 @@ vcpkg_from_github(
       0003-force-package-requirements.patch
       0004-fix-policy-CMP0057.patch
       0009-fix-uwp.patch
+      0010-fix-gtk-dependency.patch
 )
 
 file(REMOVE "${SOURCE_PATH}/cmake/FindCUDNN.cmake")
