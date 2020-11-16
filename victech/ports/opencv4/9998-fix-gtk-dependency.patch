@@ -6,7 +6,7 @@ index e3593d4..d2dbccc 100644
  endif()
  
  # --- GTK ---
-+# victech patch: load GTK from system only (detached from vcpkg)
++# victech: load GTK from system only (detached from vcpkg)
 +macro(_ocv_check_modules_system_only define)
 +  if(DEFINED PKG_CONFIG_USE_CMAKE_PREFIX_PATH)
 +    set(_PREV_PKG_CONFIG_USE_CMAKE_PREFIX_PATH ${PKG_CONFIG_USE_CMAKE_PREFIX_PATH})
@@ -27,7 +27,7 @@ index e3593d4..d2dbccc 100644
 +    unset(PKG_CONFIG_USE_CMAKE_PREFIX_PATH)
 +  endif()
 +endmacro()
-+# victech patch: (end)
++# victech: (end)
  ocv_clear_vars(HAVE_GTK HAVE_GTK3 HAVE_GTHREAD HAVE_GTKGLEXT)
  if(WITH_GTK AND NOT HAVE_QT)
    if(NOT WITH_GTK_2_X)

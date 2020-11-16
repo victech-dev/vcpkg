@@ -23,7 +23,7 @@ index 6dd4aaf..f5aec6e 100644
 +find_package(harfbuzz CONFIG QUIET)
 +if (freetype_FOUND AND harfbuzz_FOUND)
 +  get_target_property(FREETYPE_INCLUDE_DIRS freetype INTERFACE_INCLUDE_DIRECTORIES)
-+  set(HARFBUZZ_INCLUDE_DIRS "${FREETYPE_INCLUDE_DIRS}/harfbuzz")
++  get_target_property(HARFBUZZ_INCLUDE_DIRS harfbuzz::harfbuzz INTERFACE_INCLUDE_DIRECTORIES)
 +  get_target_property(_freetype_FOUND_DIR freetype IMPORTED_LOCATION_RELEASE)
 +  get_filename_component(_freetype_FOUND_DIR ${_freetype_FOUND_DIR} PATH)
 +  get_target_property(_harfbuzz_FOUND_DIR harfbuzz::harfbuzz IMPORTED_LOCATION_RELEASE)
