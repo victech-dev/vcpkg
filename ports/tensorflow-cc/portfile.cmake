@@ -72,6 +72,17 @@ set(ENV{NCCL_INSTALL_PATH} "")
 set(ENV{CC_OPT_FLAGS} "/arch:AVX")
 set(ENV{TF_NEED_CUDA} 0)
 set(ENV{TF_CONFIGURE_IOS} 0)
+set(ENV{TF_NCCL_VERSION} "")
+# VICTECH patch
+set(ENV{TF_NEED_CUDA} 1)
+set(ENV{TF_CUDA_COMPUTE_CAPABILITIES} "5.3,7.2,7.5") # Jetson Xavier:7.2, RTX 2080 Ti:7.5, GTX 1650:7.5
+set(ENV{TF_CUDA_CLANG} 0)
+if(VCPKG_TARGET_IS_LINUX)
+	set(ENV{TF_NEED_TENSORRT} 1) # need tensorrt
+	set(ENV{TF_TENSORRT_VERSION} 7.1.3) # tensorrt version
+	set(ENV{GCC_HOST_COMPILER_PATH} "/usr/bin/gcc")
+endif()
+# VICTECH patch end
 
 if(VCPKG_TARGET_IS_WINDOWS)
 	set(BAZEL_LIB_NAME tensorflow_cc.dll)
@@ -131,6 +142,7 @@ foreach(BUILD_TYPE dbg rel)
 			fix-build-error.patch # Fix namespace error
 			fix-dbg-build-errors.patch # Fix no return statement
 			fix-more-build-errors.patch # Fix no return statement
+			fix-cuda-configure.patch # VICTECH
 			${STATIC_ONLY_PATCHES}
 			${LINUX_ONLY_PATCHES}
 	)
