@@ -48,8 +48,12 @@ file(MAKE_DIRECTORY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel)
 file(GLOB SOURCES ${SOURCE_PATH}/*)
 file(COPY ${SOURCES} DESTINATION ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel)
 
+vcpkg_find_acquire_program(GIT)
+get_filename_component(GIT_DIR "${GIT}" DIRECTORY)
+vcpkg_add_to_path(PREPEND ${GIT_DIR})
+
 if(CMAKE_HOST_WIN32)
-    vcpkg_acquire_msys(MSYS_ROOT PACKAGES unzip patch diffutils git)
+    vcpkg_acquire_msys(MSYS_ROOT PACKAGES bash unzip patch diffutils libintl gzip coreutils)
     set(BASH ${MSYS_ROOT}/usr/bin/bash.exe)
     set(ENV{BAZEL_SH} ${MSYS_ROOT}/usr/bin/bash.exe)
     vcpkg_add_to_path(PREPEND ${MSYS_ROOT}/usr/bin)
