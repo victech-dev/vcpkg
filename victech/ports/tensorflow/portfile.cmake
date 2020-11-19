@@ -145,6 +145,7 @@ foreach(BUILD_TYPE rel)
 
     if(TRUE) # for dynamic library
         if(VCPKG_TARGET_IS_WINDOWS)
+            # NOTE : --copt=-DTHRUST_IGNORE_CUB_VERSION_CHECK https://github.com/tensorflow/tensorflow/issues/41803
             list(APPEND COPTS "--copt=-DTHRUST_IGNORE_CUB_VERSION_CHECK")
             list(JOIN COPTS " " COPTS)
             list(JOIN CXXOPTS " " CXXOPTS)
@@ -155,8 +156,9 @@ foreach(BUILD_TYPE rel)
                 LOGNAME build-${TARGET_TRIPLET}-${BUILD_TYPE}
             )
         else()
+            # NOTE : --config=noaws added explicitly because of compile error in arm64-linux (Jetson Xavier)
             vcpkg_execute_build_process(
-                COMMAND ${BAZEL} build --verbose_failures ${BUILD_OPTS} --python_path=${PYTHON3} ${COPTS} ${CXXOPTS} ${LINKOPTS} --define=no_tensorflow_py_deps=true //tensorflow/tools/lib_package:libtensorflow
+                COMMAND ${BAZEL} build --verbose_failures --config=noaws --config=nogcp --config=nonccl ${BUILD_OPTS} --python_path=${PYTHON3} ${COPTS} ${CXXOPTS} ${LINKOPTS} --define=no_tensorflow_py_deps=true //tensorflow/tools/lib_package:libtensorflow
                 WORKING_DIRECTORY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-${BUILD_TYPE}
                 LOGNAME build-${TARGET_TRIPLET}-${BUILD_TYPE}
             )
