@@ -17,9 +17,10 @@ def get_identity_file():
     ssh_path = Path.home() / '.ssh'
     if (ssh_path / 'id_rsa').is_file():
         return str(ssh_path / 'id_rsa')
-    for f in ssh_path.iterdir():
-        if f.is_file() and f.read_text().startswith("-----BEGIN RSA PRIVATE KEY-----"):
-            return str(f)
+    if ssh_path.is_dir():
+        for f in ssh_path.iterdir():
+            if f.is_file() and f.read_text().startswith("-----BEGIN RSA PRIVATE KEY-----"):
+                return str(f)
     return None
 
 # check working directory
@@ -94,7 +95,10 @@ subprocess.run(tar_cmds)
 upload_host = "dev@192.168.2.100"
 upload_path = "/workspace/webroot/port_8082/download/vicpilot/vcpkg"
 identity_file = get_identity_file()
-upload_cmds = ["scp", "-i", identity_file, f"vcpkg_{triplet}.tar.gz", f"{upload_host}:{upload_path}"]
+if identity_file is not None:
+    upload_cmds = ["scp", "-i", identity_file, f"vcpkg_{triplet}.tar.gz", f"{upload_host}:{upload_path}"]
+else:
+    upload_cmds = ["scp", f"vcpkg_{triplet}.tar.gz", f"{upload_host}:{upload_path}"]
 print("-- uploading export file:", " ".join(upload_cmds))
 subprocess.run(upload_cmds)
 
