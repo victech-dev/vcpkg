@@ -34,6 +34,7 @@ cd "$PATH_TO_BUILD_DIR"
 
 echo "=== CONFIGURING ==="
 
+sed -i -e 's/\r$//' "$PATH_TO_SRC_DIR/configure"
 sh "$PATH_TO_SRC_DIR/configure" "--prefix=$PATH_TO_PACKAGE_DIR" @CONFIGURE_OPTIONS@
 
 echo "=== BUILDING ==="
