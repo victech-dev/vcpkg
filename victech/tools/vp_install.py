@@ -58,7 +58,10 @@ pkg_list = [
     "freetype",
     "harfbuzz",
     "minizip",
-    "curl"
+    "curl",
+    "upb",
+    "grpc",
+    "protobuf-c[tools]"
 ]
 print("-- package list:", pkg_list)
 
