@@ -25,7 +25,7 @@ def get_identity_file():
 
 # check working directory
 cwd = Path(os.getcwd())
-assert cwd.stem == 'vcpkg', "Run this script in vcpkg folder"
+assert cwd.stem.startswith('vcpkg'), "Run this script in vcpkg folder"
 
 # resolve triplet
 triplet = None
