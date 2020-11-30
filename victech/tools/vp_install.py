@@ -60,7 +60,9 @@ pkg_list = [
     "minizip",
     "curl",
     "upb",
-    "grpc"
+    "grpc",
+    "fftw3",
+    "oatpp"
 ]
 if not triplet.endswith('-windows'):
     pkg_list = pkg_list + ["protobuf-c[tools]"]
