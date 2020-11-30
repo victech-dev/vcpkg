@@ -60,9 +60,10 @@ pkg_list = [
     "minizip",
     "curl",
     "upb",
-    "grpc",
-    "protobuf-c[tools]"
+    "grpc"
 ]
+if not triplet.endswith('-windows'):
+    pkg_list = pkg_list + ["protobuf-c[tools]"]
 print("-- package list:", pkg_list)
 
 if not args.exportonly and args.clean:
