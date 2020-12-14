@@ -62,8 +62,8 @@ pkg_list = [
     "upb",
     "grpc",
     "fftw3",
-    "oatpp",
-    "crow"
+    "sqlite3",
+    "sqlitecpp",
 ]
 if not triplet.endswith('-windows'):
     pkg_list = pkg_list + ["protobuf-c[tools]"]
